@@ -23,7 +23,18 @@ class LinksTableSeeder extends Seeder
             //Sprint #2
             ['comision_id'=>1,'sprint_id'=>2,'type'=> 0, 'source'=>7,'target'=>8],
             ['comision_id'=>1,'sprint_id'=>2,'type'=> 1, 'source'=>8,'target'=>9],
-            ['comision_id'=>1,'sprint_id'=>2,'type'=> 2, 'source'=>9,'target'=>10]
+            ['comision_id'=>1,'sprint_id'=>2,'type'=> 2, 'source'=>9,'target'=>10],
+
+            /* Comision 2 clon de la 1 */
+            ['comision_id'=>2,'sprint_id'=>5,'type'=> 0, 'source'=>11,'target'=>12],
+			['comision_id'=>2,'sprint_id'=>5,'type'=> 0, 'source'=>11,'target'=>14],
+			['comision_id'=>2,'sprint_id'=>5,'type'=> 0, 'source'=>15,'target'=>13],
+			['comision_id'=>2,'sprint_id'=>5,'type'=> 0, 'source'=>14,'target'=>15],
+            ['comision_id'=>2,'sprint_id'=>5,'type'=> 1, 'source'=>13,'target'=>16],
+            //Sprint #2
+            ['comision_id'=>2,'sprint_id'=>6,'type'=> 0, 'source'=>17,'target'=>18],
+            ['comision_id'=>2,'sprint_id'=>6,'type'=> 1, 'source'=>18,'target'=>19],
+            ['comision_id'=>2,'sprint_id'=>6,'type'=> 2, 'source'=>19,'target'=>20]
         ]);
     }
 }

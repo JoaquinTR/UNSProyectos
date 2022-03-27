@@ -1,4 +1,8 @@
 main {
-    height: 92vh;
+    height: auto;
+    background-color:rgb(205, 205, 205) !important;
+}
+
+html{
     background-color:rgb(205, 205, 205) !important;
 }

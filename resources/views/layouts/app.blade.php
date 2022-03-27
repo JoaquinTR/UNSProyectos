@@ -105,9 +105,8 @@
                 </button>
                 @endauth
             <div class="container">
-                
-
                 <a class="navbar-brand" href="{{ url('/') }}">
+                    <img class="" src="{{ asset('imagenes/dcic.png') }}" alt="UNSP" width="35" height="35">
                     {{ config('app.name', 'Laravel') }}
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
@@ -130,15 +129,16 @@
                                 </li>
                             @endif
 
-                            @if (Route::has('register'))
+                            <!-- No hay register, los profesores cargan a los usuarios -->
+                            <!-- @if (Route::has('register'))
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
                                 </li>
-                            @endif
+                            @endif -->
                         @else
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    {{ Auth::user()->name }}
+                                    {{ (!Auth::user()->isProfesor() && Auth::user()->alias != "") ? Auth::user()->alias : Auth::user()->name }}
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -165,8 +165,8 @@
         </main>
     </div>
     
-    <script src="{{ asset('js/app.js') }}"></script>
-    <script src="{{ asset('js/dashboard/main.js') }}"></script>
+    <script src="{{ asset('js/app.js') }}" defer></script>
+    <script src="{{ asset('js/dashboard/main.js') }}" defer></script>
     <!-- Cedo a los scripts custom -->
     @yield('scripts')
 </body>

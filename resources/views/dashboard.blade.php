@@ -7,7 +7,7 @@
 @section('content')
 @if(!empty($comisiones) && $comisiones->count())
 @foreach ($comisiones as $idx => $comision)
-<div class="container py-5 custom-bg" style="height: 100%">
+<div class="container py-4 custom-bg" style="height: 100%">
     <div class="row text-center text-dark mb-2">
         <div class="col-lg-7 mx-auto">
             <h1 class="display-6">{{$comision->nombre}}</h1>
@@ -20,7 +20,7 @@
             <ul class="list-group shadow">
                 <!-- list group item-->
                 @foreach ($comision->sprints()->get() as $idx => $sprint)
-                <a href="{{ route('gantt.view',['sprint_id'=>$sprint->id]) }}" class="text-decoration-none">
+                <a href="{{ (Auth::user()->isProfesor()) ? route('gantt.view',['sprint_id' => $sprint->id,'comision_id' => $comision->id]) : route('gantt.view',['sprint_id'=>$sprint->id]) }}" class="text-decoration-none">
                     <li class="list-group-item">
                         <!-- Sprint -->
                         <div class="media align-items-lg-center flex-column flex-lg-row p-3">

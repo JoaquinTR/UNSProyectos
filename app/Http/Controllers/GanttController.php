@@ -16,10 +16,15 @@ class GanttController extends Controller
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index(){
+		$user = auth()->user();
+		if($user->isProfesor()){
+			return redirect('/dashboard');
+		}
 		$date_diff = -1;
 		$text_color = "";
-		$comision = auth()->user()->comision_id;
-		$sprint = Sprint::where('comision_id', $comision)->where('iniciado', 1)->where('entregado',0)->get()[0];
+		$comision = $user->comision_id;
+		$sprint = Sprint::where('comision_id', $comision)->where('iniciado', 1)->where('entregado',0)->first();
+
 
 		if($sprint){
 			$date_diff = round( (strtotime($sprint['deadline']) - time()) / (60 * 60 * 24));
@@ -38,11 +43,22 @@ class GanttController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function ganttView($sprint_id, Request $request){
+    public function ganttView(Request $request, $sprint_id, $comision_id = null){
 		$date_diff = -1;
 		$text_color = "";
-		$comision = auth()->user()->comision_id;
-        $sprint = Sprint::where('comision_id', $comision)->where('id', $sprint_id)->get()[0];
+		$user = null;
+		$comision = null;
+		$user = auth()->user();
+		if($user->isProfesor()){ /* El profesor debe indicar sprint_id Y ADEMÁS comision_id */
+			if(!isset($comision_id)){
+				return redirect("dashboard");
+			}
+			$comision = $comision_id;
+			$sprint = Sprint::where('comision_id', $comision)->find($sprint_id);
+		}else{ /* solo la comision del alumno */
+			$comision = $user->comision_id;
+			$sprint = Sprint::where('comision_id', $comision)->find($sprint_id);
+		}
 
 		if($sprint->entregado==1){
 			$date_diff= -1;

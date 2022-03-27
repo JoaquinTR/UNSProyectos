@@ -15,7 +15,8 @@ class ComisionTableSeeder extends Seeder
     public function run()
     {
 	    \DB::table('comision')->insert([
-		    ['id'=>1, 'nombre'=> 'Comision #1']
+		    ['id'=>1, 'nombre'=> 'Comision #1'],
+            ['id'=>2, 'nombre'=> 'Comision #2']
         ]);			
     }
 }

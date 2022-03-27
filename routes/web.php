@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GanttController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PasswordModifyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,14 +26,16 @@ Route::get('/', function () { /* Default, redirecciona */
 Route::get('/gantt', [GanttController::class, 'index'])->middleware(['auth'])->middleware('is_alumno')->name('gantt');
 
 /* Tablero gantt de administracion de un sprint, en curso o no (ultimo caso no editable) */
-Route::get('/gantt/{sprint_id}', [GanttController::class, 'ganttView'])->middleware(['auth'])->name('gantt.view');
+Route::get('/gantt/{sprint_id}/{comision_id?}', [GanttController::class, 'ganttView'])->middleware(['auth'])->name('gantt.view');
 
     /* Visor de proyecto y sus sprints, para el profesor indica los proyectos de los alumnos por comisión */
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
 
-    Route::get('/dashboard/profile', function () { /* Perfil personal, administracion de cuenta */
-        return view('dashboard/profile');
-    })->middleware(['auth'])->name('dashboard.profile');
+    /* Perfil personal, administracion de cuenta */
+    Route::get('/dashboard/profile', [ProfileController::class, 'index'])->middleware(['auth'])->name('dashboard.profile');
+
+    Route::get('/dashboard/profile/contraseña', [PasswordModifyController::class, 'index'])->name('modify_passw');
+    Route::post('/dashboard/profile/contraseña', [PasswordModifyController::class, 'store'])->name('modify_passw');
 
     Route::get('/dashboard/settings', function () { /* Settings de visor gantt, permite personalizar la interfaz aún más */
         return view('dashboard.settings');
@@ -41,6 +45,8 @@ Route::get('/gantt/{sprint_id}', [GanttController::class, 'ganttView'])->middlew
 Route::get('/admin', function () { /* Visor de proyecto y sus sprints, para el profesor indica los proyectos de los alumnos segmentados por comision (eso el dashboard) */
     return view('admin');
 })->middleware('is_profesor')->name('admin');
+
+/* Auth */
 
 require __DIR__.'/auth.php';
 
