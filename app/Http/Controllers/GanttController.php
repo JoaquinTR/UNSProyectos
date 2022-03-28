@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Task;
 use App\Models\Link;
 use App\Models\Sprint;
+use App\Models\Settings;
  
 class GanttController extends Controller
 {
@@ -17,14 +18,15 @@ class GanttController extends Controller
      */
     public function index(){
 		$user = auth()->user();
+		
 		if($user->isProfesor()){
 			return redirect('/dashboard');
 		}
+
 		$date_diff = -1;
 		$text_color = "";
 		$comision = $user->comision_id;
 		$sprint = Sprint::where('comision_id', $comision)->where('iniciado', 1)->where('entregado',0)->first();
-
 
 		if($sprint){
 			$date_diff = round( (strtotime($sprint['deadline']) - time()) / (60 * 60 * 24));
@@ -34,8 +36,10 @@ class GanttController extends Controller
 			else if($date_diff > 5 && $date_diff < 12) $text_color = "text-orange";  
 		}
 		
+		/* Custom css */
+		$css_skin = Settings::select('skin')->where('users_id', $user->id)->first()->skin;
 
-        return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 'text_color' => $text_color]);
+        return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 'text_color' => $text_color, 'css_skin' => $css_skin]);
     }
 
 	/**
@@ -48,6 +52,7 @@ class GanttController extends Controller
 		$text_color = "";
 		$user = null;
 		$comision = null;
+
 		$user = auth()->user();
 		if($user->isProfesor()){ /* El profesor debe indicar sprint_id Y ADEMÁS comision_id */
 			if(!isset($comision_id)){
@@ -70,8 +75,16 @@ class GanttController extends Controller
 			else if($date_diff > 0 && $date_diff <= 5) $text_color = "text-danger";
 			else if($date_diff > 5 && $date_diff < 12) $text_color = "text-orange";
 		}
+
+		/* Custom css */
+		$css_skin = Settings::select('skin')->where('users_id', $user->id)->first();
+		if(!isset($css_skin)){
+			$css_skin = "broadway";
+		}else{
+			$css_skin = $css_skin->skin;
+		}
 		
-        return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 'text_color' => $text_color]);
+        return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 'text_color' => $text_color, 'css_skin' => $css_skin]);
     }
 
 	//*************************************************************

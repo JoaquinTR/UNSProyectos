@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('css')
-<!-- <link href="dhtmlxgantt.css"rel="stylesheet"> -->
-<link href="{{ asset('css/dhtmlx-skins/dhtmlxgantt_broadway.css') }}" rel="stylesheet">
+<!-- <link href="dhtmlxgantt.css"rel="s'tylesheet"> -->
+<link href="{{ asset('css/dhtmlx-skins/'.$css_skin.'.css') }}" rel="stylesheet">
 <link href="{{ asset('css/gantt/main.css') }}" rel="stylesheet">
 @endsection
 

@@ -5,6 +5,8 @@ use App\Http\Controllers\GanttController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PasswordModifyController;
+use App\Http\Controllers\ProfileModifyController;
+use App\Http\Controllers\SettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,7 +23,6 @@ Route::get('/', function () { /* Default, redirecciona */
     return redirect('/dashboard');
 });
 
-/* Vistas de uso */
 /* Tablero gantt de administracion de sprint, salta al gantt en curso */
 Route::get('/gantt', [GanttController::class, 'index'])->middleware(['auth'])->middleware('is_alumno')->name('gantt');
 
@@ -37,9 +38,13 @@ Route::get('/gantt/{sprint_id}/{comision_id?}', [GanttController::class, 'ganttV
     Route::get('/dashboard/profile/contraseña', [PasswordModifyController::class, 'index'])->name('modify_passw');
     Route::post('/dashboard/profile/contraseña', [PasswordModifyController::class, 'store'])->name('modify_passw');
 
-    Route::get('/dashboard/settings', function () { /* Settings de visor gantt, permite personalizar la interfaz aún más */
-        return view('dashboard.settings');
-    })->middleware(['auth'])->name('dashboard.settings');
+    Route::get('/dashboard/profile/modify', [ProfileModifyController::class, 'index'])->name('modify_data');
+    Route::post('/dashboard/profile/modify/name', [ProfileModifyController::class, 'storeName'])->name('modify_data.name');
+    Route::post('/dashboard/profile/modify/alias', [ProfileModifyController::class, 'storeAlias'])->name('modify_data.alias');
+    Route::post('/dashboard/profile/modify/email', [ProfileModifyController::class, 'storeEmail'])->name('modify_data.email');
+
+    Route::get('/dashboard/settings', [SettingsController::class, 'index'])->name('settings');
+    Route::post('/dashboard/settings', [SettingsController::class, 'storeSkin'])->name('settings.skin');
 
 /* Vista de administración de materia, profesor */
 Route::get('/admin', function () { /* Visor de proyecto y sus sprints, para el profesor indica los proyectos de los alumnos segmentados por comision (eso el dashboard) */

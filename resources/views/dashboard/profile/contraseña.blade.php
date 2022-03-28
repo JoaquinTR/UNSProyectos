@@ -5,9 +5,9 @@
     <div class="row">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header bg-dark text-white">
                     Modificar contraseña
-                    <a type="button" class="float-end btn-close btn-close-dark" href="{{ route('dashboard.profile') }}"></a>
+                    <a type="button" class="float-end btn-close btn-close-white" href="{{ route('dashboard.profile') }}"></a>
                 </div>
 
                 <div class="card-body bg-light">
@@ -75,5 +75,5 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/profile/password-reset.js') }}" defer></script
+<script src="{{ asset('js/profile/password-reset.js') }}" defer></script>
 @endsection

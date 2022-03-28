@@ -26,7 +26,7 @@ class ProfileModifyController extends Controller
      */
     public function index()
     {
-        return view('profile.datos');
+        return view('dashboard.profile.datos');
     }
 
     /**
@@ -53,6 +53,38 @@ class ProfileModifyController extends Controller
         // Lleno el modelo de usuario
         $user->fill([
             'name' => $input['name'],
+            'updated_at' => now()
+        ]);
+
+        // Grabo en la base de datos
+        $user->save();
+
+        return back()->with('success', 'Datos modificados correctamente.');
+    }
+
+    /**
+     * Tomar datos de alias de un usuario.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function storeAlias(Request $request)
+    {
+        // Obtener el usuario actual
+        $user = auth()->user();
+
+        $request->validate(
+            [
+                'alias' => 'required'
+            ],
+            [
+                'alias.required' => 'Se necesita un alias.'
+            ]);
+
+        $input = $request->all();
+
+        // Lleno el modelo de usuario
+        $user->fill([
+            'alias' => $input['alias'],
             'updated_at' => now()
         ]);
 
