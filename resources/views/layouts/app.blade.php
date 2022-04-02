@@ -156,7 +156,7 @@
         </main>
     </div>
     
-    <script src="{{ asset('js/app.js') }}" defer></script>
+    <script src="{{ asset('js/app.js') }}"></script>
     <script src="{{ asset('js/dashboard/main.js') }}" defer></script>
     <!-- Cedo a los scripts custom -->
     @yield('scripts')

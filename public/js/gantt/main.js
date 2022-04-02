@@ -180,3 +180,39 @@ dp.attachEvent("onAfterUpdate", function(id, action, tid, response){
 //gant.init("gantt_here"); //esto me refresca el gantt visualmente
 //var tasks = gantt.getTaskByTime(); console.log(tasks) evaluar agregar hora y fecha y recorrer las tareas para detectar posible colisión
 // Implementar función de achicado o agrandado de task list jugando con la variable gantt.config.layout[cols][0][width] y forzar un refresh del gantt
+
+
+/* Funcionalidad de tokens */
+jQuery(function(){
+    keepalive();
+    setInterval(keepalive, 3000);
+});
+
+/**
+ * Interacción con el backend, sincronización de datos y manejo de tokens.
+ */
+function keepalive(){
+    /* gantt.ajax.post({
+        url: "/api/token/keepalive",
+        headers: {
+            "X-Header-Sprint-Id": sprint,
+            "X-Header-Comision-Id": comision
+        }
+    }).then(function ($status_comision) {
+        console.log($status_comision);
+    }).error(function($msg){
+        console.error($msg);
+    }); */
+    jQuery.ajax({
+        type: "POST",
+        url: "/api/token/keepalive",
+        dataType: "text",
+        /* data: "userId=" + encodeURIComponent(trim(document.forms[0].userId.value)), */
+        success: function (response) {
+          console.log(JSON.parse(response));
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          console.error(thrownError);
+        }
+    });
+}

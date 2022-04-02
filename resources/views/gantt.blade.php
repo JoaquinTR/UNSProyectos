@@ -47,7 +47,8 @@
 <script type="text/javascript">
 	var sprint = {{$sprint['id'];}};
 	var comision = {{$comision;}};
-	var noEditable = {{($sprint['entregado'] || $sprint['iniciado'] == 0 || Auth::user()->isProfesor()) ? 'true' : 'false'}};
+	var token_owner = {{(isset($token_owner)) ? $token_owner : 0}};
+	var noEditable = {{($sprint['entregado'] || !isset($token_owner) || !$token_owner || $sprint['iniciado'] == 0 || Auth::user()->isProfesor()) ? 'true' : 'false'}};
 </script>
 <script src="{{ asset('dhtmlxgantt.js') }}" ></script>
 <script src="{{ asset('js/gantt/main.js') }}" ></script>

@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache; 
 use App\Models\Task;
 use App\Models\Link;
 use App\Models\Sprint;
@@ -18,6 +19,17 @@ class GanttController extends Controller
      */
     public function index(){
 		$user = auth()->user();
+
+		/* Token management */
+		$token_owner = Cache::get("token_owner-".$user->comision_id, null);
+		if($token_owner == null){ # Token disponible
+			/* LOCK token_owner, en deny, poner token_owner en 0 */
+			Cache::put("token_owner-".$user->comision_id, $user->id);
+			$token_owner = 1;
+			/* Release token_owner */
+		}else{ # Token no disponible, decido si es mío o no
+			($token_owner == $user->id) ? $token_owner = 1 : $token_owner = 0;
+		}	
 		
 		if($user->isProfesor()){
 			return redirect('/dashboard');
@@ -39,7 +51,7 @@ class GanttController extends Controller
 		/* Custom css */
 		$css_skin = Settings::select('skin')->where('users_id', $user->id)->first()->skin;
 
-        return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 'text_color' => $text_color, 'css_skin' => $css_skin]);
+        return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 'text_color' => $text_color, 'css_skin' => $css_skin, 'token_owner' => $token_owner]);
     }
 
 	/**
@@ -54,6 +66,10 @@ class GanttController extends Controller
 		$comision = null;
 
 		$user = auth()->user();
+		if(!isset($comision_id) && !$user->isProfesor()){
+			return redirect('/gantt');
+		}
+
 		if($user->isProfesor()){ /* El profesor debe indicar sprint_id Y ADEMÁS comision_id */
 			if(!isset($comision_id)){
 				return redirect("dashboard");
