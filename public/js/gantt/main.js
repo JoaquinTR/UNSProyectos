@@ -184,35 +184,47 @@ dp.attachEvent("onAfterUpdate", function(id, action, tid, response){
 
 /* Funcionalidad de tokens */
 jQuery(function(){
-    keepalive();
-    setInterval(keepalive, 3000);
+    if(token_owner != 0){
+        keepalive();
+        setInterval(keepalive, 3000);
+    }
+
+    $('#refrescar-gantt').click(function(){
+        gantt.ajax.get({
+            url: "/api/data",
+            headers: {
+                "X-Header-Sprint-Id": sprint,
+                "X-Header-Comision-Id": comision
+            }
+        }).then(function (xhr) {
+            gantt.parse(xhr.responseText);
+            gantt.init("gantt_here");
+        });
+    });
 });
 
 /**
  * Interacción con el backend, sincronización de datos y manejo de tokens.
  */
 function keepalive(){
-    /* gantt.ajax.post({
-        url: "/api/token/keepalive",
-        headers: {
-            "X-Header-Sprint-Id": sprint,
-            "X-Header-Comision-Id": comision
-        }
-    }).then(function ($status_comision) {
-        console.log($status_comision);
-    }).error(function($msg){
-        console.error($msg);
-    }); */
+    // Agregar control de timeout (tornar gantt no editable o algo así)
     jQuery.ajax({
         type: "POST",
         url: "/api/token/keepalive",
         dataType: "text",
         /* data: "userId=" + encodeURIComponent(trim(document.forms[0].userId.value)), */
         success: function (response) {
-          console.log(JSON.parse(response));
+          crawl(JSON.parse(response));
         },
         error: function (xhr, ajaxOptions, thrownError) {
           console.error(thrownError);
         }
     });
+}
+
+/**
+ * Interpreta el objeto de respuesta de un keepalive.
+ */
+function crawl(status_comision){
+    console.log(status_comision);
 }

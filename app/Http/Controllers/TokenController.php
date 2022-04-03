@@ -59,6 +59,7 @@ class TokenController extends Controller
         foreach ($compañeros as $key => $compa) {
             $last_seen = Cache::get('alumno'.$user->comision_id."-".$compa->id, "gone");
             $data = Array(
+                "id" => $compa->id,
                 "alias" => $compa->alias,
                 "nombre" => $compa->nombre,
                 "last_seen" => $last_seen

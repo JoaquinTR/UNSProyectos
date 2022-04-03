@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\Link;
 use App\Models\Sprint;
 use App\Models\Settings;
+use App\Models\User;
  
 class GanttController extends Controller
 {
@@ -20,6 +21,10 @@ class GanttController extends Controller
     public function index(){
 		$user = auth()->user();
 
+		if($user->isProfesor()){
+			return redirect('/dashboard');
+		}
+
 		/* Token management */
 		$token_owner = Cache::get("token_owner-".$user->comision_id, null);
 		if($token_owner == null){ # Token disponible
@@ -30,10 +35,21 @@ class GanttController extends Controller
 		}else{ # Token no disponible, decido si es mío o no
 			($token_owner == $user->id) ? $token_owner = 1 : $token_owner = 0;
 		}	
-		
-		if($user->isProfesor()){
-			return redirect('/dashboard');
+
+		/* Data de logueados */
+		$compañeros = User::where('comision_id', $user->comision_id)->where('id', '!=' , $user->id)->get();
+		$data_compañeros = Array();
+		foreach ($compañeros as $key => $compa) {
+			$last_seen = Cache::get('alumno'.$user->comision_id."-".$compa->id, "gone");
+			$data = Array(
+				"id" => $compa->id,
+				"alias" => $compa->alias,
+				"nombre" => $compa->nombre,
+				"last_seen" => $last_seen
+			);
+			array_push($data_compañeros, $data);
 		}
+		$compañeros = $data_compañeros;
 
 		$date_diff = -1;
 		$text_color = "";
@@ -51,7 +67,9 @@ class GanttController extends Controller
 		/* Custom css */
 		$css_skin = Settings::select('skin')->where('users_id', $user->id)->first()->skin;
 
-        return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 'text_color' => $text_color, 'css_skin' => $css_skin, 'token_owner' => $token_owner]);
+        return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 
+			'text_color' => $text_color, 'css_skin' => $css_skin, 'token_owner' => $token_owner,
+			'compañeros' => $compañeros]);
     }
 
 	/**
@@ -64,10 +82,36 @@ class GanttController extends Controller
 		$text_color = "";
 		$user = null;
 		$comision = null;
+		$token_owner = null;
+		$compañeros = null;
 
 		$user = auth()->user();
 		if(!isset($comision_id) && !$user->isProfesor()){
-			return redirect('/gantt');
+			/* Token management */
+			$token_owner = Cache::get("token_owner-".$user->comision_id, null);
+			if($token_owner == null){ # Token disponible
+				/* LOCK token_owner, en deny, poner token_owner en 0 */
+				Cache::put("token_owner-".$user->comision_id, $user->id);
+				$token_owner = 1;
+				/* Release token_owner */
+			}else{ # Token no disponible, decido si es mío o no
+				($token_owner == $user->id) ? $token_owner = 1 : $token_owner = 0;
+			}	
+
+			/* Data de logueados */
+			$compañeros = User::where('comision_id', $user->comision_id)->where('id', '!=' , $user->id)->get();
+        	$data_compañeros = Array();
+        	foreach ($compañeros as $key => $compa) {
+        	    $last_seen = Cache::get('alumno'.$user->comision_id."-".$compa->id, "gone");
+        	    $data = Array(
+					"id" => $compa->id,
+        	        "alias" => $compa->alias,
+        	        "nombre" => $compa->nombre,
+        	        "last_seen" => $last_seen
+        	    );
+        	    array_push($data_compañeros, $data);
+        	}
+			$compañeros = $data_compañeros;
 		}
 
 		if($user->isProfesor()){ /* El profesor debe indicar sprint_id Y ADEMÁS comision_id */
@@ -84,6 +128,7 @@ class GanttController extends Controller
 		if($sprint->entregado==1){
 			$date_diff= -1;
 			$text_color = "text-success";
+			$token_owner = null; #Utilizo esto para flaggear que desactive el sistema de token por completo
 		}else{
 			$date_diff = round( (strtotime($sprint['deadline']) - time()) / (60 * 60 * 24));
 			$text_color = "text-primary";
@@ -100,7 +145,9 @@ class GanttController extends Controller
 			$css_skin = $css_skin->skin;
 		}
 		
-        return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 'text_color' => $text_color, 'css_skin' => $css_skin]);
+        return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 
+			'text_color' => $text_color, 'css_skin' => $css_skin, 'token_owner' => $token_owner,
+			'compañeros' => $compañeros]);
     }
 
 	//*************************************************************

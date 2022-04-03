@@ -85,7 +85,7 @@
     @endauth
 
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-dark bg-dark shadow-sm" style="height: 8vh !important;">
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark shadow-sm" style="height: 4rem !important;">
                 @auth
                 <button id="menu-acciones" type="button" class="btn mx-4" data-bs-toggle="offcanvas" role="button" data-bs-target="#offcanvasMenuAcciones" aria-controls="offcanvasMenuAcciones" >
                     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-caret-right-square" viewBox="0 0 16 16">
@@ -103,6 +103,22 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
+                <div class="ms-5">
+                    <div id="compañeros" class="row">
+                    @if(isset($token_owner) && isset($compañeros))
+                        @foreach ($compañeros as $idx => $compañero)
+                        <div class="col">
+                            <div class='icon-container' data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-original-title="{{(isset($compañero['alias'])) ? $compañero['alias'] : $compañero['nombre']}}" data-bs-trigger="hover">
+                                <img src="https://cdn2.iconfinder.com/data/icons/flatfaces-everyday-people-square/128/beard_male_man_face_avatar-512.png" class="rounded-circle mx-2"  width="35" height="35" >
+                                <div id="status-{{$compañero['id']}}" class='status-circle'>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    @endif
+                    </div>
+                </div>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
