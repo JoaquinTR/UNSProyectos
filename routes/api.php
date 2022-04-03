@@ -18,17 +18,12 @@ use App\Http\Controllers\TokenController;
 |
 */
 
-/* Manejo de datos del diagrama Gantt */
-Route::get('/data', [GanttController::class, 'get']);
-Route::resource('task', TaskController::class);
-Route::resource('link', LinkController::class);
-
 /* Rutas de token de sincronización, manejan el sincronismo entre instancias de planeación */
-Route::post('/token/keepalive', [TokenController::class, 'keepalive']);
-Route::post('/token/pedir', [TokenController::class, 'pedirToken']);
-Route::post('/token/soltar', [TokenController::class, 'soltarToken']);
-Route::post('/token/aceptar', [TokenController::class, 'aceptarVotacion']);
-Route::post('/token/rechazar', [TokenController::class, 'rechazarVotacion']);
+Route::post('/api/token/keepalive', [TokenController::class, 'keepalive']);
+Route::post('/api/token/pedir', [TokenController::class, 'pedirToken']);
+Route::post('/api/token/soltar', [TokenController::class, 'soltarToken']);
+Route::post('/api/token/aceptar', [TokenController::class, 'aceptarVotacion']);
+Route::post('/api/token/rechazar', [TokenController::class, 'rechazarVotacion']);
 
 /* DEBUG, ELIMINAR */
 Route::post('/token/clear', [TokenController::class, 'clearCache']);

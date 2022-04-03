@@ -26,8 +26,7 @@ class TokenController extends Controller
      */
     public function keepalive(Request $request){
         
-        #$user = auth()->user();
-        $user = User::where('alias', 'alumnazo')->first();
+        $user = auth()->user();
         $status_comision = (object)[]; #Status de la comisión y sincronización
         
         /* Marco mi llegada al servidor, o la refresco */
@@ -47,8 +46,6 @@ class TokenController extends Controller
         $datos_dirty = Cache::get("datos-dirty-".$user->comision_id."-".$user->id,0);
         if(isset($datos_dirty) && $datos_dirty != 0 && $datos_dirty > now()){
             $status_comision->datos_dirty = 1;
-            #Limpio la entrada, no interesa el lock, va a refrescar los datos
-            Cache::put("datos-dirty-".$user->comision_id."-".$user->id,0);
         }else{
             $status_comision->datos_dirty = 0;
         }
@@ -61,7 +58,8 @@ class TokenController extends Controller
             $data = Array(
                 "id" => $compa->id,
                 "alias" => $compa->alias,
-                "nombre" => $compa->nombre,
+                "nombre" => $compa->name,
+                "email" => $compa->email,
                 "last_seen" => $last_seen
             );
             array_push($data_compañeros, $data);

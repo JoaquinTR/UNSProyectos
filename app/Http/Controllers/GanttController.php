@@ -44,7 +44,8 @@ class GanttController extends Controller
 			$data = Array(
 				"id" => $compa->id,
 				"alias" => $compa->alias,
-				"nombre" => $compa->nombre,
+				"nombre" => $compa->name,
+				"email" => $compa->email,
 				"last_seen" => $last_seen
 			);
 			array_push($data_compañeros, $data);
@@ -106,7 +107,8 @@ class GanttController extends Controller
         	    $data = Array(
 					"id" => $compa->id,
         	        "alias" => $compa->alias,
-        	        "nombre" => $compa->nombre,
+        	        "nombre" => $compa->name,
+					"email" => $compa->email,
         	        "last_seen" => $last_seen
         	    );
         	    array_push($data_compañeros, $data);
@@ -156,11 +158,17 @@ class GanttController extends Controller
 
 	//Obtiene los datos de un sprint, para un usuario en su comisión asignada
   	public function get(Request $request){
+		$user = auth()->user();
 		$sprint_id = $request->header('X-Header-Sprint-Id');
-		$comision_id = $request->header('X-Header-Comision-Id');
+		$comision_id = $user->comision_id;
 		$tasks = new Task();
 		$links = new Link();
-	
+		
+		#Limpio la entrada de datos dirty
+		try {
+			Cache::put("datos-dirty-".$user->comision_id."-".$user->id,0);
+		}catch(Exception $e){/* No interesa el lock, va a refrescar los datos en el frontend */}
+
     	return response()->json([
 			"data" => $tasks->orderBy('sortorder')->where('sprint_id', $sprint_id)->where('comision_id', $comision_id)->get(),
 			"links" => $links->where('sprint_id', $sprint_id)->where('comision_id', $comision_id)->get()

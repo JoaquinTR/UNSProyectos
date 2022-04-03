@@ -22,30 +22,30 @@ main {
 
 @keyframes glowings {
     0% {
-      background-color: #198754;
-      box-shadow: 0 0 5px #198754;
+		background-color: #198754;
+		box-shadow: 0 0 5px #198754;
     }
     50% {
-      background-color: #198754;
-      box-shadow: 0 0 20px #198754;
+		background-color: #198754;
+		box-shadow: 0 0 20px #198754;
     }
     100% {
-      background-color: #198754;
-      box-shadow: 0 0 5px #198754;
+		background-color: #198754;
+		box-shadow: 0 0 5px #198754;
     }
 }
 @keyframes glowingr {
     0% {
-      background-color: #dc3545;
-      box-shadow: 0 0 5px #dc3545;
+		background-color: #dc3545;
+		box-shadow: 0 0 5px #dc3545;
     }
     50% {
-      background-color: #dc3545;
-      box-shadow: 0 0 20px #dc3545;
+		background-color: #dc3545;
+		box-shadow: 0 0 20px #dc3545;
     }
     100% {
-      background-color: #dc3545;
-      box-shadow: 0 0 5px #dc3545;
+		background-color: #dc3545;
+		box-shadow: 0 0 5px #dc3545;
     }
 }
 .glows {
@@ -67,7 +67,11 @@ main {
     border-radius: 50%;
     background-color: #198754;
     border: 2px solid white;
-    bottom: 0;
-    right: -10px;
+    bottom: -8px;
+    right: -15px;
     position: absolute;
+}
+
+.gone{
+    background-color: gray;
 }

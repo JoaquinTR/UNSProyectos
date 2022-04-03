@@ -7,6 +7,7 @@
 @endsection
 
 @section('content')
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <!-- Gantt container -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-1">
 	@if(!Auth::user()->isProfesor())
@@ -74,6 +75,7 @@
 <script type="text/javascript">
 	var sprint = {{$sprint['id'];}};
 	var comision = {{$comision;}};
+	var current_user_id = {{Auth::user()->id}};
 	var token_owner = {{(isset($token_owner)) ? $token_owner : 0}};
 	var noEditable = {{($sprint['entregado'] || !isset($token_owner) || !$token_owner || $sprint['iniciado'] == 0 || Auth::user()->isProfesor()) ? 'true' : 'false'}};
 </script>
