@@ -240,8 +240,10 @@ function crawl(status_comision){
         status_comision.data_compañeros.forEach(compa => {
             if(compa.last_seen != "gone"){
                 $('#status-'+compa.id).removeClass("gone");
+                $('#imagen-'+compa.id).addClass("border border-3 border-success");
             }else{
                 $('#status-'+compa.id).addClass("gone");
+                $('#imagen-'+compa.id).removeClass("border border-3 border-success");
             }
         });
     }
@@ -310,7 +312,6 @@ function crawl(status_comision){
         voto_emitido = false;
         tablero_voto_visible = false;
     }
-
 }
 
 /* Fuerza una recarga de datos y repintado del gantt */
@@ -319,7 +320,7 @@ function hard_reload_gantt(){
         url: "/data",
         headers: {
             "X-Header-Sprint-Id": sprint,
-            /* "X-Header-Comision-Id": comision */
+            "X-Header-Comision-Id": comision
         }
     }).then(function (xhr) {
         gantt.parse(xhr.responseText);

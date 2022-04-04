@@ -53,8 +53,17 @@ class TokenController extends Controller
         /* Datos de compañeros online */
         $compañeros = User::where('comision_id', $user->comision_id)->where('id', '!=' , $user->id)->get();
         $data_compañeros = Array();
+        $max_time = now()->subSeconds(15)->format('Y-m-d H:i:s');
         foreach ($compañeros as $key => $compa) {
             $last_seen = Cache::get('alumno'.$user->comision_id."-".$compa->id, "gone");
+            if($last_seen != "gone"){
+                $time_alive = explode("-", $last_seen, 2)[1];
+                $status_comision->time_alive = $time_alive;
+                $status_comision->max_time = $max_time;
+                if($max_time > $time_alive){ //si ahora menos 15 segundos es mayor a la ultima vez que lo vimos, se fué
+                    $last_seen = "gone";
+                }
+            }
             $data = Array(
                 "id" => $compa->id,
                 "alias" => $compa->alias,

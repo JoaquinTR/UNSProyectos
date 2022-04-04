@@ -93,11 +93,9 @@ class GanttController extends Controller
 			if($token_owner == null){ # Token disponible
 				/* LOCK token_owner, en deny, poner token_owner en 0 */
 				Cache::put("token_owner-".$user->comision_id, $user->id);
-				$token_owner = 1;
+				$token_owner = $user->id;
 				/* Release token_owner */
-			}else{ # Token no disponible, decido si es mío o no
-				($token_owner == $user->id) ? $token_owner = 1 : $token_owner = 0;
-			}	
+			}
 
 			/* Data de logueados */
 			$compañeros = User::where('comision_id', $user->comision_id)->where('id', '!=' , $user->id)->get();

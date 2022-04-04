@@ -120,7 +120,7 @@
                                 <li class='list-group-item text-wrap'><h5><span class='fw-bold'>Email:</span><br> {{$compañero['email']}}</h5></li>
                             </ul>"
                             >
-                                <img src="https://cdn2.iconfinder.com/data/icons/flatfaces-everyday-people-square/128/beard_male_man_face_avatar-512.png" class="rounded-circle mx-2"  width="40" height="40" >
+                                <img id="imagen-{{$compañero['id']}}" src="https://cdn2.iconfinder.com/data/icons/flatfaces-everyday-people-square/128/beard_male_man_face_avatar-512.png" class="rounded-circle mx-2 {{(isset($compañero['last_seen']) && $compañero['last_seen'] != 'gone') ? 'border border-3 border-success' : ''}}"  width="40" height="40" >
                                 <div id="status-{{$compañero['id']}}" class='status-circle {{(isset($compañero['last_seen']) && $compañero['last_seen'] != 'gone') ? '' : 'gone'}}'>
                                 </div>
                             </div>
