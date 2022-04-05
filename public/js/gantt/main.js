@@ -38,7 +38,6 @@ if (!noEditable){
 /* Agrega una tarea utilizando el lightbox */
 function custom_add(){
     let maxId = Math.max.apply(Math, gantt.getChildren(0));
-    console.log(maxId)
     var res = gantt.createTask({
         id: maxId+1,
         text:"Nueva tarea",
@@ -290,7 +289,6 @@ function crawl(status_comision){
         hide($('#pedir-token'));
         show($('#soltar-token'));
         console.log("Vuelvo a tornar readable el gantt");
-        console.log(gantt.config.readonly);
         gantt.config.readonly = false;
         noEditable = false;
 
@@ -384,13 +382,33 @@ function soltarToken(){
           prescindirToken(JSON.parse(response));
         },
         error: function (xhr, ajaxOptions, thrownError) {
-          console.error(thrownError);
+            console.error(thrownError);
+            error(thrownError);
         }
     });
 }
 
+/* actualiza la interfaz gráfica para obtener el token */
 function prescindirToken(res){
     console.log(res);
+    if(res.cod != 1){
+        error(res.action);
+    }else{
+        success(res.action);
+        show($('#pedir-token'));
+        hide($('#soltar-token'));
+        gantt.config.readonly = true;
+        noEditable = true;
+        colHeader = "",colContent = "";
+        gantt.config.columns = [
+            {name: "text", tree: true, width: '*', resize: true},
+            {name: "start_date", align: "center", resize: true},
+            {name: "duration", align: "center"}
+        ];
+
+        /* Fuerzo la recarga del gantt desde raíz */
+        hard_reload_gantt();
+    }
 }
 
 /* Suelta el token en caso de tenerlo */
@@ -400,12 +418,50 @@ function pedirToken(){
         url: "/token/pedir",
         dataType: "text",
         success: function (response) {
-          console.log(JSON.parse(response));
+          tomarToken(JSON.parse(response));
         },
         error: function (xhr, ajaxOptions, thrownError) {
           console.error(thrownError);
         }
     });
+}
+
+function tomarToken(res){
+    console.log(res);
+    if(res.cod == 0){
+        error(res.action);
+    }else if(res.cod == 1){
+        success(res.action);
+        hide($('#pedir-token'));
+        show($('#soltar-token'));
+        console.log("Vuelvo a tornar readable el gantt");
+        gantt.config.readonly = false;
+        noEditable = false;
+
+        /* Rearmo los headers */
+        colHeader = 
+                `<div class="gantt_grid_head_cell gantt_grid_head_add" onclick="custom_add()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+                    </svg>
+                </div>`,colContent = ""; 
+        gantt.config.columns = [
+            {name: "text", tree: true, width: '*', resize: true},
+            {name: "start_date", align: "center", resize: true},
+            {name: "duration", align: "center"},
+            {
+                name: "buttons",
+                label: colHeader,
+                width: 75,
+                template: colContent
+            }
+        ];
+
+        /* Fuerzo la recarga del gantt desde raíz */
+        hard_reload_gantt();
+    }else{
+        success(res.action);
+    }
 }
 
 /* Suelta el token en caso de tenerlo */
@@ -446,4 +502,28 @@ function hide(el){
 /* Auxiliar, muestra un componente HTML */
 function show(el){
     el.removeClass("d-none");
+}
+
+/* Auxiliar, muestra alerta en pantalla */
+function success(msg){
+    $('#toast-error').hide();
+    $('#toast-success').hide();
+    $("#toast-success-body").html(msg);
+    $("#toast-success").fadeIn( 200, function() {
+        setTimeout(function(){
+            $('#toast-success').fadeOut(200);
+        },3500);
+    });
+}
+
+/* Auxiliar, muestra error en pantalla */
+function error(msg){
+    $('#toast-error').hide();
+    $('#toast-success').hide();
+    $("#toast-error-body").html(msg);
+    $("#toast-error").fadeIn( 200, function() {
+        setTimeout(function(){
+            $('#toast-error').fadeOut(200);
+        },3500);
+    });
 }

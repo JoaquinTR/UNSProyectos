@@ -58,6 +58,11 @@ class TokenController extends Controller
                     $last_seen = "gone";
                 }
             }
+            if($last_seen == "gone" && $token_owner == $compa->id){ //Si se fué el token owner debo soltar el token
+                //LOCK
+                Cache::put("token_owner-".$user->comision_id, 0);
+                //LOCK RELEASE
+            }
             $data = Array(
                 "id" => $compa->id,
                 "alias" => $compa->alias,
@@ -161,6 +166,7 @@ class TokenController extends Controller
         }
 
         return response()->json([
+            "cod" => 1,
             "action"=> "token devuelto"
         ]);
     }

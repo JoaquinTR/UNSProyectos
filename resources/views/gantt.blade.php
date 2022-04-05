@@ -7,6 +7,23 @@
 @endsection
 
 @section('content')
+<!-- ALERT -->
+<div id="toast-success" class="toast align-items-center text-white bg-success border-0 start-50 translate-middle-x" style="position: absolute;" role="alert" aria-live="assertive" aria-atomic="true">
+  <div class="d-flex">
+    <div id="toast-success-body" class="toast-body">
+      Hello, world! This is a toast message.
+    </div>
+  </div>
+</div>
+<!-- ERROR -->
+<div id="toast-error" class="toast align-items-center text-white bg-danger border-0 start-50 translate-middle-x" style="position: absolute;" role="alert" aria-live="assertive" aria-atomic="true">
+  <div class="d-flex">
+    <div id="toast-error-body" class="toast-body">
+      Hello, world! This is a toast message.
+    </div>
+  </div>
+</div>
+
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <!-- Gantt container -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-1">
