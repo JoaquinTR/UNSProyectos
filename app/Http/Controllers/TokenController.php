@@ -34,21 +34,16 @@ class TokenController extends Controller
         
         /* Token owner */
         $token_owner = Cache::get("token_owner-".$user->comision_id, null);
-        if(!isset($token_owner)){
+        /* if(!isset($token_owner)){ //no debería manotear el token
             # TODO: LOCK token_owner, setear 0 ante un lock deny (alguien ganó de mano)
             $token_owner = $user->id;
             Cache::put("token_owner-".$user->comision_id, $token_owner);
             # TODO: RELEASE LOCK
-        }
+        } */
         $status_comision->token_owner = $token_owner;
 
         /* Estado del gannt, 1=> Debe actualizar gantt, 0 => al día */
-        $datos_dirty = Cache::get("datos-dirty-".$user->comision_id."-".$user->id,0);
-        if(isset($datos_dirty) && $datos_dirty != 0 && $datos_dirty > now()){
-            $status_comision->datos_dirty = 1;
-        }else{
-            $status_comision->datos_dirty = 0;
-        }
+        $status_comision->datos_dirty = Cache::get("datos-dirty-".$user->comision_id."-".$user->id,0);
 
         /* Datos de compañeros online */
         $compañeros = User::where('comision_id', $user->comision_id)->where('id', '!=' , $user->id)->get();
@@ -58,9 +53,8 @@ class TokenController extends Controller
             $last_seen = Cache::get('alumno'.$user->comision_id."-".$compa->id, "gone");
             if($last_seen != "gone"){
                 $time_alive = explode("-", $last_seen, 2)[1];
-                $status_comision->time_alive = $time_alive;
-                $status_comision->max_time = $max_time;
                 if($max_time > $time_alive){ //si ahora menos 15 segundos es mayor a la ultima vez que lo vimos, se fué
+                    Cache::put('alumno'.$user->comision_id."-".$compa->id, "gone");
                     $last_seen = "gone";
                 }
             }
@@ -120,8 +114,28 @@ class TokenController extends Controller
      * Comienza una votación para que el alumno que la inicia tome poder del token.
      */
     public function pedirToken(Request $request){
+        $user = auth()->user();
+
         /* Ante un lock deny espero 0.1 segundos 3 veces */
+        $token_owner = Cache::get("token_owner-".$user->comision_id, null);
+        if($token_owner == $user->id){
+            return response()->json([
+                "cod" => 0,
+                "action"=> "Ya tenés el token"
+            ]);
+        }
+        else if(!isset($token_owner) || $token_owner == 0){ //no debería manotear el token
+            # TODO: LOCK token_owner, setear 0 ante un lock deny (alguien ganó de mano)
+            Cache::put("token_owner-".$user->comision_id, $user->id);
+            # TODO: RELEASE LOCK
+            return response()->json([
+                "cod" => 1,
+                "action"=> "Token obtenido"
+            ]);
+        }
+
         return response()->json([
+            "cod" => 2,
             "action"=> "votacion iniciada"
         ]);
     }
@@ -130,7 +144,22 @@ class TokenController extends Controller
      * Suelta el token que posee el alumno para que otro lo tome.
      */
     public function soltarToken(Request $request){
-        /* Ante un lock deny espero 0.1 segundos 3 veces */
+        $user = auth()->user();
+
+        $token_owner = Cache::get("token_owner-".$user->comision_id, null);
+        if($token_owner != $user->id || !isset($token_owner)){
+            return response()->json([
+                "cod" => 0,
+                "action"=> "No podés soltar el token si no lo tenes"
+            ]);
+        }
+        else if($token_owner == $user->id){ //no debería manotear el token
+            # TODO: LOCK token_owner, setear 0 ante un lock deny (alguien ganó de mano)
+            $token_owner = $user->id;
+            Cache::put("token_owner-".$user->comision_id, 0);
+            # TODO: RELEASE LOCK
+        }
+
         return response()->json([
             "action"=> "token devuelto"
         ]);

@@ -75,3 +75,17 @@ main {
 .gone{
     background-color: gray;
 }
+
+/* Gantt custom */
+
+.gantt_cal_light{
+	height: 270px !important;
+}
+
+.gantt_cal_light .gantt_cal_ltitle{
+	background-image: none !important;
+}
+
+.gantt_grid_scale{
+	background-image: none !important;
+}

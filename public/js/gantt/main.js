@@ -129,9 +129,11 @@ gantt.attachEvent("onAfterTaskDelete", function(id, mode, e){
 
 /* chart configuration and initialization */
 gantt.plugins({ /* Debo implementar el save on demand para que esto funcione */
-    undo: true,
+    /* undo: true, */
     quick_info:true
 });
+/* gantt.config.undo = false;
+gantt.config.redo = true; */
 gantt.config.readonly = (noEditable) ? true : false;
 gantt.config.order_branch = true;// order tasks only inside a branch
 gantt.config.scale_height = 30*2;
@@ -152,11 +154,15 @@ gantt.config.scales = [
 ];
 dp.init(gantt);
 
-//Agrego un header custom para una autenticación ultra-básica
+//Agrego un header custom para una autenticación ultra-básica y datos de spint y comisión
 dp.setTransactionMode({
     mode:"REST",
     headers:{
         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    },
+    payload:{
+        "sprintId":sprint,
+        "comisionId":comision
     }
 });
 
@@ -168,9 +174,16 @@ dp.attachEvent("onBeforeUpdate", function(id, state, data){
     return true;
 });
 
+dp.attachEvent("onBeforeDataSending", function(id, state, data){
+    data.sprintId = sprint;
+    data.comisionId = comision;
+    return true;
+});
+
 //error handler
 dp.attachEvent("onAfterUpdate", function(id, action, tid, response){
     if(action == "error"){
+        hard_reload_gantt();
         var box = gantt.alert({
             title:"Alert",
             type:"alert-error",
@@ -208,6 +221,22 @@ jQuery(function(){
 
     $('#refrescar-gantt').click(function(){
         hard_reload_gantt();
+    });
+
+    $('#soltar-token').click(function(){
+        soltarToken();
+    });
+
+    $('#pedir-token').click(function(){
+        pedirToken();
+    });
+
+    $('#aceptar-pedido').click(function(){
+        votoPositivo();
+    });
+
+    $('#rechazar-pedido').click(function(){
+        votoNegativo();
     });
 });
 
@@ -258,6 +287,8 @@ function crawl(status_comision){
     //La seguridad la proponen los endpoint de actualización de datos, 
     //cocinar un current_user_id solo rompe el front end.
     if('token_owner' in status_comision && status_comision.token_owner == current_user_id && gantt.config.readonly == true){
+        hide($('#pedir-token'));
+        show($('#soltar-token'));
         console.log("Vuelvo a tornar readable el gantt");
         console.log(gantt.config.readonly);
         gantt.config.readonly = false;
@@ -285,6 +316,8 @@ function crawl(status_comision){
         /* Fuerzo la recarga del gantt desde raíz */
         hard_reload_gantt();
     }else if('token_owner' in status_comision && status_comision.token_owner != current_user_id && gantt.config.readonly == false){ //Edit revoke
+        show($('#pedir-token'));
+        hide($('#soltar-token'));
         gantt.config.readonly = true;
         noEditable = true;
         colHeader = "",colContent = "";
@@ -331,10 +364,86 @@ function hard_reload_gantt(){
 /* Muestra el manejador de voto */
 function show_poll(){
     tablero_voto_visible = true;
+    hide($('#grupo-token'));
 }
 
 /* Esconde el manejador de voto */
 function hide_poll(){
     voto_emitido = true;
     tablero_voto_visible = false;
+    show($('#grupo-token'));
 };
+
+/* Suelta el token en caso de tenerlo */
+function soltarToken(){
+    jQuery.ajax({
+        type: "POST",
+        url: "/token/soltar",
+        dataType: "text",
+        success: function (response) {
+          prescindirToken(JSON.parse(response));
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          console.error(thrownError);
+        }
+    });
+}
+
+function prescindirToken(res){
+    console.log(res);
+}
+
+/* Suelta el token en caso de tenerlo */
+function pedirToken(){
+    jQuery.ajax({
+        type: "POST",
+        url: "/token/pedir",
+        dataType: "text",
+        success: function (response) {
+          console.log(JSON.parse(response));
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          console.error(thrownError);
+        }
+    });
+}
+
+/* Suelta el token en caso de tenerlo */
+function votoPositivo(){
+    jQuery.ajax({
+        type: "POST",
+        url: "/token/aceptar",
+        dataType: "text",
+        success: function (response) {
+          console.log(JSON.parse(response));
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          console.error(thrownError);
+        }
+    });
+}
+
+/* Suelta el token en caso de tenerlo */
+function votoNegativo(){
+    jQuery.ajax({
+        type: "POST",
+        url: "/token/rechazar",
+        dataType: "text",
+        success: function (response) {
+          console.log(JSON.parse(response));
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          console.error(thrownError);
+        }
+    });
+}
+
+/* Auxiliar, esconde un componente HTML */
+function hide(el){
+    el.addClass("d-none");
+}
+
+/* Auxiliar, muestra un componente HTML */
+function show(el){
+    el.removeClass("d-none");
+}

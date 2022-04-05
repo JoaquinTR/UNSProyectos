@@ -12,7 +12,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-1">
 	@if(!Auth::user()->isProfesor())
 	<div class="btn-toolbar mb-2 mb-md-0">
-		<div id="grupo-token" class="btn-group mx-2">
+		<div id="grupo-token" class="btn-group mx-2 {{($token_owner == null)?'d-none':''}}">
 			<button id="refrescar-gantt" type="button" class="btn btn-sm btn-primary"
 				data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Refrescar datos del gantt. Además vuelve a dibujarlo en pantalla." data-bs-trigger="hover">
 				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
@@ -20,13 +20,13 @@
 					<path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
 				</svg>
 			</button>
-			<button id="soltar-token" type="button" class="btn btn-sm btn-primary primary"
+			<button id="soltar-token" type="button" class="btn btn-sm btn-primary primary {{($token_owner != null && $token_owner == Auth::user()->id)?'':'d-none'}}"
 				data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-original-title="Soltar token" data-bs-trigger="hover">
 				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16">
 					<path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2Z"/>
 				</svg>
 			</button>
-			<button id="pedir-token" type="button" class="btn btn-sm btn-primary"
+			<button id="pedir-token" type="button" class="btn btn-sm btn-primary {{($token_owner != null && $token_owner != Auth::user()->id)?'':'d-none'}}"
 				data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-original-title="Pedir token" data-bs-trigger="hover">
 				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-hand-index-fill" viewBox="0 0 16 16">
 					<path d="M8.5 4.466V1.75a1.75 1.75 0 1 0-3.5 0v5.34l-1.2.24a1.5 1.5 0 0 0-1.196 1.636l.345 3.106a2.5 2.5 0 0 0 .405 1.11l1.433 2.15A1.5 1.5 0 0 0 6.035 16h6.385a1.5 1.5 0 0 0 1.302-.756l1.395-2.441a3.5 3.5 0 0 0 .444-1.389l.271-2.715a2 2 0 0 0-1.99-2.199h-.581a5.114 5.114 0 0 0-.195-.248c-.191-.229-.51-.568-.88-.716-.364-.146-.846-.132-1.158-.108l-.132.012a1.26 1.26 0 0 0-.56-.642 2.632 2.632 0 0 0-.738-.288c-.31-.062-.739-.058-1.05-.046l-.048.002z"/>

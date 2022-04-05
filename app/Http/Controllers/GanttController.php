@@ -39,8 +39,15 @@ class GanttController extends Controller
 		/* Data de logueados */
 		$compañeros = User::where('comision_id', $user->comision_id)->where('id', '!=' , $user->id)->get();
 		$data_compañeros = Array();
+		$max_time = now()->subSeconds(15)->format('Y-m-d H:i:s');
 		foreach ($compañeros as $key => $compa) {
 			$last_seen = Cache::get('alumno'.$user->comision_id."-".$compa->id, "gone");
+			if($last_seen != "gone"){
+				$time_alive = explode("-", $last_seen, 2)[1];
+				if($max_time > $time_alive){ //si ahora menos 15 segundos es mayor a la ultima vez que lo vimos, se fué
+					Cache::put('alumno'.$user->comision_id."-".$compa->id, "gone");
+				}
+			}
 			$data = Array(
 				"id" => $compa->id,
 				"alias" => $compa->alias,
@@ -51,6 +58,8 @@ class GanttController extends Controller
 			array_push($data_compañeros, $data);
 		}
 		$compañeros = $data_compañeros;
+
+		Cache::put("datos-dirty-".$user->comision_id."-".$user->id,0); //Estoy por entrar, no importa el dirty
 
 		$date_diff = -1;
 		$text_color = "";
@@ -100,8 +109,16 @@ class GanttController extends Controller
 			/* Data de logueados */
 			$compañeros = User::where('comision_id', $user->comision_id)->where('id', '!=' , $user->id)->get();
         	$data_compañeros = Array();
+			$max_time = now()->subSeconds(15)->format('Y-m-d H:i:s');
         	foreach ($compañeros as $key => $compa) {
         	    $last_seen = Cache::get('alumno'.$user->comision_id."-".$compa->id, "gone");
+				if($last_seen != "gone"){
+					$time_alive = explode("-", $last_seen, 2)[1];
+					if($max_time > $time_alive){ //si ahora menos 15 segundos es mayor a la ultima vez que lo vimos, se fué
+						Cache::put('alumno'.$user->comision_id."-".$compa->id, "gone");
+						$last_seen = "gone";
+					}
+				}
         	    $data = Array(
 					"id" => $compa->id,
         	        "alias" => $compa->alias,
@@ -112,6 +129,8 @@ class GanttController extends Controller
         	    array_push($data_compañeros, $data);
         	}
 			$compañeros = $data_compañeros;
+
+			Cache::put("datos-dirty-".$user->comision_id."-".$user->id,0); //Estoy por entrar, no importa el dirty
 		}
 
 		if($user->isProfesor()){ /* El profesor debe indicar sprint_id Y ADEMÁS comision_id */
