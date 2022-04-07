@@ -50,7 +50,7 @@
 				</svg>
 			</button>
 		</div>
-		<div id="grupo-voto" class="btn-group mx-2">
+		<div id="grupo-voto" class="btn-group mx-2 {{($votacion == null || $votacion == 0)?'d-none':''}}">
 			<button id="aceptar-pedido" type="button" class="btn btn-sm btn-success glows"
 				data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-original-title="Aceptar el pedido de token" data-bs-trigger="hover">
 				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-send-check-fill" viewBox="0 0 16 16">
@@ -60,11 +60,19 @@
 			</button>
 			<button id="rechazar-pedido" type="button" class="btn btn-sm btn-danger glowr"
 				data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-original-title="Rechazar el pedido de token" data-bs-trigger="hover">
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-x-fill" viewBox="0 0 16 16">
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-send-x-fill" viewBox="0 0 16 16">
 					<path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 1.59 2.498C8 14 8 13 8 12.5a4.5 4.5 0 0 1 5.026-4.47L15.964.686Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
 					<path d="M16 12.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Zm-4.854-1.354a.5.5 0 0 0 0 .708l.647.646-.647.646a.5.5 0 0 0 .708.708l.646-.647.646.647a.5.5 0 0 0 .708-.708l-.647-.646.647-.646a.5.5 0 0 0-.708-.708l-.646.647-.646-.647a.5.5 0 0 0-.708 0Z"/>
 				</svg>
 			</button>
+		</div>
+		<div id="grupo-token" class="btn-group mx-2">
+			<div id="token-libre" type="button" class="btn-sm btn-transparent glowt p-0 m-0 {{($token_owner != null && $token_owner == 0)?'':'d-none'}}" style="width:30;height:30px;"
+				data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-original-title="¡Token disponible! ¡Pedilo!" data-bs-trigger="hover">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#dc3545" class="bi bi-exclamation-square-fill" viewBox="0 0 16 16">
+					<path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6 4c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995A.905.905 0 0 1 8 4zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+				</svg>
+			</div>
 		</div>
 		<ul class="dropdown-menu" aria-labelledby="token-dropdown">
 			<li><a id="pedir-token" class="dropdown-item text-primary" href="#" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Pedir token para trabajar en el gantt" data-bs-trigger="hover">Peidir token</a></li>

@@ -248,6 +248,7 @@ function keepalive(){
         type: "POST",
         url: "/token/keepalive",
         dataType: "text",
+        timeout: 2500,
         success: function (response) {
           crawl(JSON.parse(response));
         },
@@ -288,6 +289,7 @@ function crawl(status_comision){
     if('token_owner' in status_comision && status_comision.token_owner == current_user_id && gantt.config.readonly == true){
         hide($('#pedir-token'));
         show($('#soltar-token'));
+        hide($('#token-libre'));
         console.log("Vuelvo a tornar readable el gantt");
         gantt.config.readonly = false;
         noEditable = false;
@@ -316,6 +318,7 @@ function crawl(status_comision){
     }else if('token_owner' in status_comision && status_comision.token_owner != current_user_id && gantt.config.readonly == false){ //Edit revoke
         show($('#pedir-token'));
         hide($('#soltar-token'));
+        hide($('#token-libre'));
         gantt.config.readonly = true;
         noEditable = true;
         colHeader = "",colContent = "";
@@ -327,6 +330,9 @@ function crawl(status_comision){
 
         /* Fuerzo la recarga del gantt desde raíz */
         hard_reload_gantt();
+    }else if('token_owner' in status_comision && status_comision.token_owner == 0){
+        hide($('#soltar-token'));
+        show($('#token-libre'));
     }
 
     /* Manejo de votación */
@@ -378,6 +384,7 @@ function soltarToken(){
         type: "POST",
         url: "/token/soltar",
         dataType: "text",
+        timeout: 2500,
         success: function (response) {
           prescindirToken(JSON.parse(response));
         },
@@ -397,6 +404,7 @@ function prescindirToken(res){
         success(res.action);
         show($('#pedir-token'));
         hide($('#soltar-token'));
+        show($('#token-libre'));
         gantt.config.readonly = true;
         noEditable = true;
         colHeader = "",colContent = "";
@@ -417,11 +425,13 @@ function pedirToken(){
         type: "POST",
         url: "/token/pedir",
         dataType: "text",
+        timeout: 2500,
         success: function (response) {
           tomarToken(JSON.parse(response));
         },
         error: function (xhr, ajaxOptions, thrownError) {
           console.error(thrownError);
+          error(thrownError);
         }
     });
 }
@@ -434,6 +444,7 @@ function tomarToken(res){
         success(res.action);
         hide($('#pedir-token'));
         show($('#soltar-token'));
+        hide($('#token-libre'));
         console.log("Vuelvo a tornar readable el gantt");
         gantt.config.readonly = false;
         noEditable = false;
@@ -470,6 +481,7 @@ function votoPositivo(){
         type: "POST",
         url: "/token/aceptar",
         dataType: "text",
+        timeout: 2500,
         success: function (response) {
           console.log(JSON.parse(response));
         },
@@ -485,6 +497,7 @@ function votoNegativo(){
         type: "POST",
         url: "/token/rechazar",
         dataType: "text",
+        timeout: 2500,
         success: function (response) {
           console.log(JSON.parse(response));
         },

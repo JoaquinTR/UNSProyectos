@@ -30,11 +30,9 @@ class GanttController extends Controller
 		if($token_owner == null){ # Token disponible
 			/* LOCK token_owner, en deny, poner token_owner en 0 */
 			Cache::put("token_owner-".$user->comision_id, $user->id);
-			$token_owner = 1;
+			$token_owner = $user->id;
 			/* Release token_owner */
-		}else{ # Token no disponible, decido si es mío o no
-			($token_owner == $user->id) ? $token_owner = 1 : $token_owner = 0;
-		}	
+		}
 
 		/* Data de logueados */
 		$compañeros = User::where('comision_id', $user->comision_id)->where('id', '!=' , $user->id)->get();
@@ -73,13 +71,16 @@ class GanttController extends Controller
 			else if($date_diff > 0 && $date_diff <= 5) $text_color = "text-danger";
 			else if($date_diff > 5 && $date_diff < 12) $text_color = "text-orange";  
 		}
+
+		/* Datos de votación */
+		$votacion = Cache::get("votacion-".$user->comision_id,0);
 		
 		/* Custom css */
 		$css_skin = Settings::select('skin')->where('users_id', $user->id)->first()->skin;
 
         return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 
 			'text_color' => $text_color, 'css_skin' => $css_skin, 'token_owner' => $token_owner,
-			'compañeros' => $compañeros]);
+			'compañeros' => $compañeros, 'votacion' => $votacion]);
     }
 
 	/**
@@ -94,6 +95,7 @@ class GanttController extends Controller
 		$comision = null;
 		$token_owner = null;
 		$compañeros = null;
+		$votacion = null;
 
 		$user = auth()->user();
 		if(!isset($comision_id) && !$user->isProfesor()){
@@ -131,6 +133,9 @@ class GanttController extends Controller
 			$compañeros = $data_compañeros;
 
 			Cache::put("datos-dirty-".$user->comision_id."-".$user->id,0); //Estoy por entrar, no importa el dirty
+
+			/* Datos de votación */
+			$votacion = Cache::get("votacion-".$user->comision_id,0);
 		}
 
 		if($user->isProfesor()){ /* El profesor debe indicar sprint_id Y ADEMÁS comision_id */
@@ -166,7 +171,7 @@ class GanttController extends Controller
 		
         return view('gantt', ['sprint' => $sprint, 'comision' => $comision, 'date_diff'=> $date_diff, 
 			'text_color' => $text_color, 'css_skin' => $css_skin, 'token_owner' => $token_owner,
-			'compañeros' => $compañeros]);
+			'compañeros' => $compañeros, 'votacion' => $votacion]);
     }
 
 	//*************************************************************

@@ -20,6 +20,11 @@ main {
     color: #fd7e14 !important;
 }
 
+#soltar-token{
+  border-top-right-radius: 0.2rem !important;
+  border-bottom-right-radius: 0.2rem !important;
+}
+
 @keyframes glowings {
     0% {
 		background-color: #198754;
@@ -48,11 +53,27 @@ main {
 		box-shadow: 0 0 5px #dc3545;
     }
 }
+@keyframes glowingt {
+  0% {
+  box-shadow: 0 0 5px #dc3545;
+  }
+  50% {
+  box-shadow: 0 0 20px #dc3545;
+  }
+  100% {
+  box-shadow: 0 0 5px #dc3545;
+  }
+}
+
 .glows {
     animation: glowings 1300ms infinite;
 }
 .glowr{
     animation: glowingr 1300ms infinite;
+}
+
+.glowt{
+    animation: glowingt 1300ms infinite;
 }
 
 .icon-container {
