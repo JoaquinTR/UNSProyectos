@@ -106,6 +106,13 @@ class TaskController extends Controller
     private function testEditable($sprint_id, $comisionId, $user){
         // Control de editabilidad
         $token_owner = Cache::get("token_owner-".$user->comision_id, null);
+        $votacion_en_curso = Cache::get("votacion-".$user->comision_id, 0);
+        if($votacion_en_curso == 1){
+            return response()->json([
+                "action" => "error",
+                "msg" => "Hay una votación en curso."
+            ]);
+        }
         if($sprint_id && Sprint::findOrFail($sprint_id)->entregado){
             return response()->json([
                 "action" => "error",

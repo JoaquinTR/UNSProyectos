@@ -330,24 +330,31 @@ function crawl(status_comision){
 
         /* Fuerzo la recarga del gantt desde raíz */
         hard_reload_gantt();
-    }else if('token_owner' in status_comision && status_comision.token_owner == 0){
+    }else if(status_comision.token_owner == 0){
         hide($('#soltar-token'));
         show($('#token-libre'));
+        
+    }else if(status_comision.token_owner > 0){
+        hide($('#token-libre'));
     }
 
     /* Manejo de votación */
-    if('votacion_en curso' in status_comision && status_comision.votacion_en == 1 && voto_emitido == false && tablero_voto_visible == false){
+    if(status_comision.votacion_en_curso == 1 && tablero_voto_visible == false && voto_emitido == false){
         //muestro el sistema de voto
         show_poll();
-    }else if('votacion_en curso' in status_comision && status_comision.votacion_en == 0 && tablero_voto_visible == false && voto_emitido == true){
-        //voté y finalizó la votación
-        voto_emitido = false;
-        tablero_voto_visible = false;
-    }else if('votacion_en curso' in status_comision && status_comision.votacion_en == 0 && tablero_voto_visible == true && voto_emitido == false){
+        hide_token_control();
+        tablero_voto_visible = true;
+    }else if(status_comision.votacion_en_curso == 1 && tablero_voto_visible == true && voto_emitido == true){
         //se me pasó la votación
         hide_poll();
-        voto_emitido = false;
+        show_token_control();
         tablero_voto_visible = false;
+        voto_emitido = false;
+    }else if(status_comision.votacion_en_curso == 0 || (status_comision.votacion_en_curso == 0 && tablero_voto_visible == false && voto_emitido == true)){
+        hide_poll();
+        show_token_control();
+        tablero_voto_visible = false;
+        voto_emitido = false;
     }
 }
 
@@ -364,19 +371,6 @@ function hard_reload_gantt(){
         gantt.init("gantt_here");
     });
 }
-
-/* Muestra el manejador de voto */
-function show_poll(){
-    tablero_voto_visible = true;
-    hide($('#grupo-token'));
-}
-
-/* Esconde el manejador de voto */
-function hide_poll(){
-    voto_emitido = true;
-    tablero_voto_visible = false;
-    show($('#grupo-token'));
-};
 
 /* Suelta el token en caso de tenerlo */
 function soltarToken(){
@@ -437,6 +431,7 @@ function pedirToken(){
 }
 
 function tomarToken(res){
+    voto_emitido == false;
     console.log(res);
     if(res.cod == 0){
         error(res.action);
@@ -471,6 +466,8 @@ function tomarToken(res){
         /* Fuerzo la recarga del gantt desde raíz */
         hard_reload_gantt();
     }else{
+        show_poll();
+        hide_token_control();
         success(res.action);
     }
 }
@@ -484,9 +481,12 @@ function votoPositivo(){
         timeout: 2500,
         success: function (response) {
           console.log(JSON.parse(response));
+          hide_poll();
+          voto_emitido = true;
         },
         error: function (xhr, ajaxOptions, thrownError) {
           console.error(thrownError);
+          error(thrownError);
         }
     });
 }
@@ -500,11 +500,34 @@ function votoNegativo(){
         timeout: 2500,
         success: function (response) {
           console.log(JSON.parse(response));
+          hide_poll();
+          voto_emitido = true;
         },
         error: function (xhr, ajaxOptions, thrownError) {
           console.error(thrownError);
+          error(thrownError);
         }
     });
+}
+
+/* Muestra el manejador de voto */
+function show_poll(){
+    tablero_voto_visible = true;
+    show($('#grupo-voto'));
+}
+
+/* Esconde el manejador de voto */
+function hide_poll(){
+    tablero_voto_visible = false;
+    hide($('#grupo-voto'));
+};
+
+function show_token_control(){
+    show($('#grupo-token'));
+}
+
+function hide_token_control(){
+    hide($('#grupo-token'));
 }
 
 /* Auxiliar, esconde un componente HTML */

@@ -28,18 +28,13 @@ class TokenController extends Controller
         
         $user = auth()->user();
         $status_comision = (object)[]; #Status de la comisión y sincronización
+        $cant_online = 1;
         
         /* Marco mi llegada al servidor, o la refresco */
         Cache::put("alumno".$user->comision_id."-".$user->id, "alive-".now()); #Si hace 15 seg que no tiene keepalive pasa a "gone-".now()
         
         /* Token owner */
-        $token_owner = Cache::get("token_owner-".$user->comision_id, null);
-        /* if(!isset($token_owner)){ //no debería manotear el token
-            # TODO: LOCK token_owner, setear 0 ante un lock deny (alguien ganó de mano)
-            $token_owner = $user->id;
-            Cache::put("token_owner-".$user->comision_id, $token_owner);
-            # TODO: RELEASE LOCK
-        } */
+        $token_owner = Cache::get("token_owner-".$user->comision_id, 0);
         $status_comision->token_owner = $token_owner;
 
         /* Estado del gannt, 1=> Debe actualizar gantt, 0 => al día */
@@ -56,13 +51,14 @@ class TokenController extends Controller
                 if($max_time > $time_alive){ //si ahora menos 15 segundos es mayor a la ultima vez que lo vimos, se fué
                     Cache::put('alumno'.$user->comision_id."-".$compa->id, "gone");
                     $last_seen = "gone";
+                }else{
+                    $cant_online += 1;
                 }
             }
             if($last_seen == "gone" && $token_owner == $compa->id){ //Si se fué el token owner debo soltar el token
-                //LOCK
                 Cache::put("token_owner-".$user->comision_id, 0);
-                //LOCK RELEASE
             }
+            
             $data = Array(
                 "id" => $compa->id,
                 "alias" => $compa->alias,
@@ -73,6 +69,7 @@ class TokenController extends Controller
             array_push($data_compañeros, $data);
         }
         $status_comision->data_compañeros = $data_compañeros;
+        $status_comision->cant_online = $cant_online;
 
         /* Datos de votos */
         $votacion_en_curso = Cache::get("votacion-".$user->comision_id,0);
@@ -81,33 +78,36 @@ class TokenController extends Controller
         $votacion_target = null;
         if($votacion_en_curso){
             $votacion_timeout = Cache::get("votacion-timeout".$user->comision_id,0);
-            $votacion_target = Cache::get("votacion-target".$user->comision_id, $user->id);
+            $votacion_target = Cache::get("votacion-target".$user->comision_id, null);
             $votacion_pos = Cache::get("votacion-positivo".$user->comision_id,0);
             $votacion_neg = Cache::get("votacion-negativo".$user->comision_id,0);
 
             /* Decisión de la votación */
-            if(isset($votacion_timeout) && $votacion_timeout != 0 && $votacion_timeout < now()){ # Debo decidir la votacion
-                /* TODO: LOCK token_owner, ante falla de obtención del lock, seteo $votacion en curso falso,
-                se esta decidiendo la votación en otro proceso, $token_owner a 0, no soy yo (tentativamente) */
-                if($votacion_pos > $votacion_neg){ # Si salio positiva actualizo token owner
-                    # Debo actualizar el owner
-                    Cache::put("token_owner-".$user->comision_id, $votacion_target);
-                    $status_comision->token_owner = $votacion_target;
-                }
+            if( ($cant_online == $votacion_pos) || (($votacion_pos-$votacion_neg) >= ceil($cant_online/2))){ 
+                # Si salio positiva actualizo token owner
+                Cache::put("token_owner-".$user->comision_id, $votacion_target);
+                $status_comision->token_owner = $votacion_target;
                 # Limpio rastros de una votación
                 Cache::put("votacion-".$user->comision_id,0);
                 Cache::put("votacion-timeout".$user->comision_id,0);
-                Cache::put("votacion-target".$user->comision_id, $user->id);
+                Cache::put("votacion-target".$user->comision_id, 0);
                 Cache::put("votacion-positivo".$user->comision_id,0);
                 Cache::put("votacion-negativo".$user->comision_id,0);
                 $votacion_en_curso = 0; #Cierro la votacion
-                /* TODO: RELEASE LOCK */
-            }else{ /* Debo devolver el estado de la votación, sigue en curso */
-                $status_comision->votacion_timeout = $votacion_timeout;
-                $status_comision->votacion_pos = $votacion_pos;
-                $status_comision->votacion_neg = $votacion_neg;
-                $status_comision->votacion_target = $votacion_target;
+            }else if((isset($votacion_timeout) && $votacion_timeout != 0 && $votacion_timeout < now()) || ($votacion_neg == $cant_online)){
+                # Limpio rastros de una votación
+                Cache::put("votacion-".$user->comision_id,0);
+                Cache::put("votacion-timeout".$user->comision_id,0);
+                Cache::put("votacion-target".$user->comision_id, 0);
+                Cache::put("votacion-positivo".$user->comision_id,0);
+                Cache::put("votacion-negativo".$user->comision_id,0);
+                $votacion_en_curso = 0; #Cierro la votacion
             }
+            /* Debo devolver el estado de la votación, sigue en curso */
+            $status_comision->votacion_timeout = $votacion_timeout;
+            $status_comision->votacion_pos = $votacion_pos;
+            $status_comision->votacion_neg = $votacion_neg;
+            $status_comision->votacion_target = $votacion_target;
         }
         $status_comision->votacion_en_curso = $votacion_en_curso;
  
@@ -123,19 +123,34 @@ class TokenController extends Controller
 
         /* Ante un lock deny espero 0.1 segundos 3 veces */
         $token_owner = Cache::get("token_owner-".$user->comision_id, null);
+        $votacion_en_curso = Cache::get("votacion-".$user->comision_id, 0);
         if($token_owner == $user->id){
             return response()->json([
                 "cod" => 0,
                 "action"=> "Ya tenés el token"
             ]);
-        }
-        else if(!isset($token_owner) || $token_owner == 0){ //no debería manotear el token
-            # TODO: LOCK token_owner, setear 0 ante un lock deny (alguien ganó de mano)
+        }else if(!isset($token_owner) || ($token_owner == 0 && $votacion_en_curso != 1)){ 
             Cache::put("token_owner-".$user->comision_id, $user->id);
-            # TODO: RELEASE LOCK
+            $votacion_en_curso = 0;
+            //$lock->release();
             return response()->json([
                 "cod" => 1,
                 "action"=> "Token obtenido"
+            ]);
+        }
+
+        /* Disparo una votación a mi favor */
+        if(isset($votacion_en_curso) && $votacion_en_curso != 1){
+            Cache::put("votacion-".$user->comision_id, 1);
+            $timeout = now()->addSeconds(15)->format('Y-m-d H:i:s');
+            Cache::put("votacion-timeout".$user->comision_id, $timeout);
+            Cache::put("votacion-target".$user->comision_id, $user->id);
+            Cache::put("votacion-positivo".$user->comision_id, 0);
+            Cache::put("votacion-negativo".$user->comision_id, 0);
+        }else{
+            return response()->json([
+                "cod" => 3,
+                "action"=> "Ya hay una votación en curso."
             ]);
         }
 
@@ -152,17 +167,21 @@ class TokenController extends Controller
         $user = auth()->user();
 
         $token_owner = Cache::get("token_owner-".$user->comision_id, null);
-        if($token_owner != $user->id || !isset($token_owner)){
+        if(!isset($token_owner) || $token_owner != $user->id){
             return response()->json([
                 "cod" => 0,
                 "action"=> "No podés soltar el token si no lo tenes"
             ]);
         }
-        else if($token_owner == $user->id){ //no debería manotear el token
-            # TODO: LOCK token_owner, setear 0 ante un lock deny (alguien ganó de mano)
-            $token_owner = $user->id;
+        else if($token_owner == $user->id){
+            /* No debería poder soltar el token durante una votación, esto es preventivo */
+            $votacion_en_curso = Cache::put("votacion-".$user->comision_id, 0);
+            $votacion_timeout = Cache::put("votacion-timeout".$user->comision_id, 0);
+            $votacion_target = Cache::put("votacion-target".$user->comision_id, 0);
+            $votacion_pos = Cache::put("votacion-positivo".$user->comision_id, 0);
+            $votacion_neg = Cache::put("votacion-negativo".$user->comision_id, 0);
+            /* Suelto el token */
             Cache::put("token_owner-".$user->comision_id, 0);
-            # TODO: RELEASE LOCK
         }
 
         return response()->json([
@@ -175,9 +194,21 @@ class TokenController extends Controller
      * Emite un voto positivo ante una votación en curso.
      */
     public function aceptarVotacion(Request $request){
+        $user = auth()->user();
         /* Insertar una llave en cache para recordar que el user votó */
         /* Ante un lock deny espero 0.1 segundos 3 veces */
+        $votacion_en_curso = Cache::get("votacion-".$user->comision_id, 0);
+        if($votacion_en_curso == 1){
+            $votacion_pos = Cache::get("votacion-positivo".$user->comision_id, 0);
+            Cache::put("votacion-positivo".$user->comision_id, $votacion_pos + 1);
+        }else{
+            return response()->json([
+                "cod" => 1,
+                "action"=> "No hay votación en curso"
+            ]);
+        }
         return response()->json([
+            "cod" => 0,
             "action"=> "voto positivo emitido"
         ]);
     }
@@ -186,15 +217,27 @@ class TokenController extends Controller
      * Emite un voto negativo ante una votación en curso.
      */
     public function rechazarVotacion(Request $request){
+        $user = auth()->user();
         /* Insertar una llave en cache para recordar que el user votó */
         /* Ante un lock deny espero 0.1 segundos 3 veces */
+        $votacion_en_curso = Cache::get("votacion-".$user->comision_id, 0);
+        if($votacion_en_curso == 1){
+            $votacion_neg = Cache::get("votacion-negativo".$user->comision_id, 0);
+            Cache::put("votacion-negativo".$user->comision_id, $votacion_neg + 1);
+        }else{
+            return response()->json([
+                "cod" => 1,
+                "action"=> "No hay votación en curso"
+            ]);
+        }
         return response()->json([
+            "cod" => 0,
             "action"=> "voto negativo emitido"
         ]);
     }
 
     /**
-     * Lockea la clave $key por 2 segundos (la duración entre keepalive)
+     * Wrapper de respuesta.
      */
     private function response($data="", $cod = 200){
         return response()->json($data, $cod, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
