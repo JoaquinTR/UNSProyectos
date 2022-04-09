@@ -92,6 +92,13 @@ main {
     right: -15px;
     position: absolute;
 }
+.token-circle {
+  width: 22px;
+  height: 22px;
+  bottom: -5px;
+  right: 15px;
+  position: absolute;
+}
 
 .gone{
     background-color: gray;
@@ -109,4 +116,33 @@ main {
 
 .gantt_grid_scale{
 	background-image: none !important;
+}
+
+/* Timer de voto */
+.controlls {
+  position: absolute;
+  left: 15%;
+  top: 40%;
+  text-align: center;
+}
+.e-c-base {
+  fill: none;
+  stroke: #6c757d;
+  stroke-width: 8px
+}
+.e-c-progress {
+  fill: currentColor;
+  stroke: #0d6efd;
+  stroke-width: 8px;
+  transition: stroke-dashoffset 0.7s;
+}
+.e-c-pointer {
+  fill: #0d6efd;
+  stroke: #0d6efd;
+  stroke-width: 3px;
+}
+#e-pointer { transition: transform 0.7s; }
+
+.modal-backdrop.show {
+  opacity: 0.7 !important;
 }

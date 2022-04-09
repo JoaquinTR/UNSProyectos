@@ -102,10 +102,8 @@ class GanttController extends Controller
 			/* Token management */
 			$token_owner = Cache::get("token_owner-".$user->comision_id, null);
 			if($token_owner == null){ # Token disponible
-				/* LOCK token_owner, en deny, poner token_owner en 0 */
 				Cache::put("token_owner-".$user->comision_id, $user->id);
 				$token_owner = $user->id;
-				/* Release token_owner */
 			}
 
 			/* Data de logueados */
@@ -149,7 +147,7 @@ class GanttController extends Controller
 			$sprint = Sprint::where('comision_id', $comision)->find($sprint_id);
 		}
 
-		if($sprint->entregado==1){
+		if($sprint->entregado == 1 || $sprint->iniciado == 0){
 			$date_diff= -1;
 			$text_color = "text-success";
 			$token_owner = null; #Utilizo esto para flaggear que desactive el sistema de token por completo

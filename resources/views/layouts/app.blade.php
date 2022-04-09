@@ -112,16 +112,21 @@
                             <div class='icon-container'
                             data-bs-toggle="profile-info"
                             data-bs-placement="bottom"
-                            data-bs-original-title="{{(isset($compañero['alias'])) ? $compañero['alias'] : $compañero['nombre']}}"
+                            data-bs-original-title="<h5 class='m-0 fw-bold'>{{(isset($compañero['alias'])) ? $compañero['alias'] : $compañero['nombre']}}</h5>"
                             data-bs-content="
                             <img src='https://cdn2.iconfinder.com/data/icons/flatfaces-everyday-people-square/128/beard_male_man_face_avatar-512.png' class='card-img-top'>
                             <ul class='list-group list-group-flush  text-center'>
                                 <li class='list-group-item text-wrap'><h5><span class='fw-bold'>Nombre:</span><br> {{$compañero['nombre']}}</h5></li>
                                 <li class='list-group-item text-wrap'><h5><span class='fw-bold'>Email:</span><br> {{$compañero['email']}}</h5></li>
+                                <li id='token-msg-{{$compañero['id']}}' class='list-group-item text-wrap d-none'><h5><span class='fw-bold'>Permisos de edición otorgados</span></h5></li>
                             </ul>"
                             >
                                 <img id="imagen-{{$compañero['id']}}" src="https://cdn2.iconfinder.com/data/icons/flatfaces-everyday-people-square/128/beard_male_man_face_avatar-512.png" class="rounded-circle mx-2 {{(isset($compañero['last_seen']) && $compañero['last_seen'] != 'gone') ? 'border border-3 border-success' : ''}}"  width="40" height="40" >
-                                <div id="status-{{$compañero['id']}}" class='status-circle {{(isset($compañero['last_seen']) && $compañero['last_seen'] != 'gone') ? '' : 'gone'}}'>
+                                <div id="status-{{$compañero['id']}}" class='status-circle {{(isset($compañero['last_seen']) && $compañero['last_seen'] != 'gone') ? '' : 'gone'}}'></div>
+                                <div id="token-{{$compañero['id']}}" class='token-circle d-none'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#0d6efd" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                                    </svg>
                                 </div>
                             </div>
                         </div>
@@ -145,13 +150,6 @@
                                     <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
                                 </li>
                             @endif
-
-                            <!-- No hay register, los profesores cargan a los usuarios -->
-                            <!-- @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                </li>
-                            @endif -->
                         @else
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>

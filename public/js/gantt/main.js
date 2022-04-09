@@ -141,6 +141,7 @@ gantt.config.date_format = "%Y-%m-%d";
 gantt.config.order_branch = true;
 gantt.config.order_branch_free = true;
 gantt.config.reorder_grid_columns = true;
+gantt.config.cascade_delete = true;
 gantt.init("gantt_here");
 
 /* Load manual con datos de sprint y comisión */
@@ -194,11 +195,20 @@ dp.attachEvent("onAfterUpdate", function(id, action, tid, response){
 
 /* Funcionalidad custom */                                              
 //gant.init("gantt_here"); //esto me refresca el gantt visualmente
-//var tasks = gantt.getTaskByTime(); console.log(tasks) evaluar agregar hora y fecha y recorrer las tareas para detectar posible colisión
-// Implementar función de achicado o agrandado de task list jugando con la variable gantt.config.layout[cols][0][width] y forzar un refresh del gantt
+//var tasks = gantt.eachTask(function(task){console.log(task);}) console.log(tasks) evaluar agregar hora y fecha y recorrer las tareas para detectar posible colisión
 
+//Variables del timer
+var progressBar = document.querySelector('.e-c-progress'); //Barra de progreso
+var pointer = document.getElementById('e-pointer'); //extremo de barra
+var length = Math.PI * 2 * 100; //radio
+var intervalTimer; //Clock de muestreo en pantalla (tics de reloj)
+var timeLeft;      //Tiempo restante
+var wholeTime = 15; //Tiempo total
+var isStarted = false; //flag de inicio de cuenta atrás
+progressBar.style.strokeDasharray = length; //Seteo la longitud
+var modal = null;
 
-/* Funcionalidad de tokens */
+/* Funcionalidad de tokens, inicio de la página */
 jQuery(function(){
     /* Autenticación básica via cookies */
     $.ajaxSetup({
@@ -237,13 +247,60 @@ jQuery(function(){
     $('#rechazar-pedido').click(function(){
         votoNegativo();
     });
+
+    $('#modal-voto').on('hide.bs.modal', function (event) {
+        kill_timer();
+    });
 });
+
+function update(value, timePercent) {
+    var offset = - length - length * value / (timePercent);
+    progressBar.style.strokeDashoffset = offset; 
+    pointer.style.transform = `rotate(${360 * value / (timePercent)}deg)`; 
+};
+
+function timer (seconds){ //counts time, takes seconds
+    let remainTime = Date.now() + (seconds * 1000);
+    update(seconds, wholeTime);
+    
+    intervalTimer = setInterval(function(){
+        timeLeft = Math.round((remainTime - Date.now()) / 1000);
+        if(timeLeft < 0){
+            kill_timer();
+            return ;
+        }
+        update(timeLeft, wholeTime);
+    }, 1000);
+}
+
+function kill_timer(){
+    console.log("restart?");
+    clearInterval(intervalTimer);
+    isStarted = false;
+    update(wholeTime, wholeTime);
+}
+
+function kickstart_timer(time){
+    //circle start
+    wholeTime = time;
+    update(wholeTime,wholeTime); //refreshes progress bar
+
+/*     function changeWholeTime(seconds){
+        if ((wholeTime + seconds) > 0){
+            wholeTime += seconds;
+            update(wholeTime,wholeTime);
+        }
+    } */
+
+    // Disparo la cuenta regresiva
+    timer(wholeTime);
+    isStarted = true;
+}
 
 /**
  * Interacción con el backend, sincronización de datos y manejo de tokens.
  */
 function keepalive(){
-    // Agregar control de timeout (tornar gantt no editable o algo así)
     jQuery.ajax({
         type: "POST",
         url: "/token/keepalive",
@@ -264,6 +321,11 @@ function keepalive(){
 function crawl(status_comision){
     console.log(status_comision);
 
+    let token_owner = 0;
+    if('token_owner' in status_comision){
+        token_owner = status_comision.token_owner;
+    }
+
     /* Actualizo el estado de cada compañero */
     if('data_compañeros' in status_comision){
         status_comision.data_compañeros.forEach(compa => {
@@ -273,6 +335,13 @@ function crawl(status_comision){
             }else{
                 $('#status-'+compa.id).addClass("gone");
                 $('#imagen-'+compa.id).removeClass("border border-3 border-success");
+            }
+            if(token_owner == compa.id){
+                $('#token-'+compa.id).removeClass("d-none");
+                $('#token-msg-'+compa.id).removeClass("d-none");
+            }else{
+                $('#token-'+compa.id).addClass("d-none");
+                $('#token-msg-'+compa.id).addClass("d-none");
             }
         });
     }
@@ -344,12 +413,6 @@ function crawl(status_comision){
         show_poll();
         hide_token_control();
         tablero_voto_visible = true;
-    }else if(status_comision.votacion_en_curso == 1 && tablero_voto_visible == true && voto_emitido == true){
-        //se me pasó la votación
-        hide_poll();
-        show_token_control();
-        tablero_voto_visible = false;
-        voto_emitido = false;
     }else if(status_comision.votacion_en_curso == 0 || (status_comision.votacion_en_curso == 0 && tablero_voto_visible == false && voto_emitido == true)){
         hide_poll();
         show_token_control();
@@ -367,6 +430,7 @@ function hard_reload_gantt(){
             "X-Header-Comision-Id": comision
         }
     }).then(function (xhr) {
+        if(noEditable) gantt.clearAll(); //hotfix para tareas eliminadas
         gantt.parse(xhr.responseText);
         gantt.init("gantt_here");
     });
@@ -436,7 +500,6 @@ function tomarToken(res){
     if(res.cod == 0){
         error(res.action);
     }else if(res.cod == 1){
-        success(res.action);
         hide($('#pedir-token'));
         show($('#soltar-token'));
         hide($('#token-libre'));
@@ -481,7 +544,7 @@ function votoPositivo(){
         timeout: 2500,
         success: function (response) {
           console.log(JSON.parse(response));
-          hide_poll();
+          hide($('#grupo-voto'));
           voto_emitido = true;
         },
         error: function (xhr, ajaxOptions, thrownError) {
@@ -500,7 +563,7 @@ function votoNegativo(){
         timeout: 2500,
         success: function (response) {
           console.log(JSON.parse(response));
-          hide_poll();
+          hide($('#grupo-voto'));
           voto_emitido = true;
         },
         error: function (xhr, ajaxOptions, thrownError) {
@@ -514,11 +577,17 @@ function votoNegativo(){
 function show_poll(){
     tablero_voto_visible = true;
     show($('#grupo-voto'));
+    modal = new bootstrap.Modal(document.getElementById('modal-voto'), {
+        keyboard: false
+    });
+    modal.show();
+    kickstart_timer(15);
 }
 
 /* Esconde el manejador de voto */
 function hide_poll(){
     tablero_voto_visible = false;
+    if(modal!=null) modal.hide();
     hide($('#grupo-voto'));
 };
 
