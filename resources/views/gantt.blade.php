@@ -91,7 +91,15 @@
 				</svg>
 			</button>
 		</div>
-		<div id="grupo-token" class="btn-group mx-2">
+		<div id="control-gantt" class="btn-group mx-2">
+			<button id="nueva-tarea" type="button" class="btn btn-sm btn-primary primary {{($token_owner != null && $token_owner == Auth::user()->id)?'':'d-none'}}"
+				data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-original-title="Soltar token" data-bs-trigger="hover">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+                </svg>
+			</button>
+		</div>
+		<div id="grupo-token-libre" class="btn-group mx-2">
 			<div id="token-libre" type="button" class="btn-sm btn-transparent glowt p-0 m-0 {{($token_owner != null && $token_owner == 0)?'':'d-none'}}" style="width:30;height:30px;"
 				data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-original-title="¡Token disponible! ¡Pedilo!" data-bs-trigger="hover">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#dc3545" class="bi bi-exclamation-square-fill" viewBox="0 0 16 16">

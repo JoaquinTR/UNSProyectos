@@ -7,8 +7,8 @@ gantt.config.layout = {
     css: "gantt_container",
     cols: [
         {
-            width:400,
-            min_width:400,
+            width:225,
+            min_width:225,
             rows:[
                 {view: "grid", scrollX: "gridScroll", scrollable: true, scrollY: "scrollVer"},
                 {view: "scrollbar", id: "gridScroll", group:"horizontal"}
@@ -24,17 +24,6 @@ gantt.config.layout = {
     ]
 };
 
-var colHeader;
-if (!noEditable){
-    colHeader = 
-                `<div class="gantt_grid_head_cell gantt_grid_head_add" onclick="custom_add()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
-                    </svg>
-                </div>`,colContent = "";    
-}else{
-    colHeader = "",colContent = "";
-}
 /* Agrega una tarea utilizando el lightbox */
 function custom_add(){
     let maxId = Math.max.apply(Math, gantt.getChildren(0));
@@ -50,19 +39,9 @@ function custom_add(){
 
 
 gantt.config.columns = [
-	{name: "text", tree: true, width: '*', resize: true},
-	{name: "start_date", align: "center", resize: true},
-	{name: "duration", align: "center"},
-	{
-		name: "buttons",
-		label: colHeader,
-		width: 75,
-		template: colContent
-	}
+	{name: "start_date", align: "center", width: '*'},
+	{name: "duration", align: "center", width: '75'},
 ];
-if (noEditable){
-    gantt.config.columns.pop();
-}
 
 /* Botones */
 /* idioma */
@@ -100,7 +79,8 @@ gantt.attachEvent("onLightboxButton", function(button_id, node, e){
         gantt.getTask(id).progress = 1;
         gantt.updateTask(id);
         gantt.hideLightbox();
-        gantt.message({type:"info", text:"Tarea completada"});
+        /* gantt.message({type:"info", text:"Tarea completada"}); */
+        success("Tarea completada");
     }
     return true;
 });
@@ -115,7 +95,7 @@ gantt.attachEvent("onBeforeTaskMove", function(id, parent, tindex){
 
 /* Eventos de resize del gantt */
 gantt.attachEvent("onAfterTaskDrag", function(id, mode, e){
-    if(mode == "resize"){
+    if(mode == "resize" || mode == "move"){
         gantt.init("gantt_here");
     }
 });
@@ -208,6 +188,11 @@ var isStarted = false; //flag de inicio de cuenta atrás
 progressBar.style.strokeDasharray = length; //Seteo la longitud
 var modal = null;
 
+//Variables de control de tokens
+var token_owner = null;
+var success_timeout = null;
+var error_timeout = null;
+
 /* Funcionalidad de tokens, inicio de la página */
 jQuery(function(){
     /* Autenticación básica via cookies */
@@ -216,6 +201,10 @@ jQuery(function(){
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
+
+    if (noEditable){
+        hide($('#nueva-tarea'));
+    }
 
     if(token_owner != 0){
         keepalive();
@@ -227,6 +216,8 @@ jQuery(function(){
         trigger : 'hover',
         html : true
     });
+
+    $('#nueva-tarea').click(custom_add);
 
     $('#refrescar-gantt').click(function(){
         hard_reload_gantt();
@@ -274,7 +265,6 @@ function timer (seconds){ //counts time, takes seconds
 }
 
 function kill_timer(){
-    console.log("restart?");
     clearInterval(intervalTimer);
     isStarted = false;
     update(wholeTime, wholeTime);
@@ -284,13 +274,6 @@ function kickstart_timer(time){
     //circle start
     wholeTime = time;
     update(wholeTime,wholeTime); //refreshes progress bar
-
-/*     function changeWholeTime(seconds){
-        if ((wholeTime + seconds) > 0){
-            wholeTime += seconds;
-            update(wholeTime,wholeTime);
-        }
-    } */
 
     // Disparo la cuenta regresiva
     timer(wholeTime);
@@ -321,11 +304,6 @@ function keepalive(){
 function crawl(status_comision){
     console.log(status_comision);
 
-    let token_owner = 0;
-    if('token_owner' in status_comision){
-        token_owner = status_comision.token_owner;
-    }
-
     /* Actualizo el estado de cada compañero */
     if('data_compañeros' in status_comision){
         status_comision.data_compañeros.forEach(compa => {
@@ -348,7 +326,6 @@ function crawl(status_comision){
 
     /* Recarga de datos disparada por backend, el metodo /data limpia la caché */
     if('datos_dirty' in status_comision && status_comision.datos_dirty == 1){
-        console.debug("Recargo el gantt");
         hard_reload_gantt();
     }
 
@@ -359,28 +336,9 @@ function crawl(status_comision){
         hide($('#pedir-token'));
         show($('#soltar-token'));
         hide($('#token-libre'));
-        console.log("Vuelvo a tornar readable el gantt");
+        show($('#nueva-tarea'));
         gantt.config.readonly = false;
         noEditable = false;
-
-        /* Rearmo los headers */
-        colHeader = 
-                `<div class="gantt_grid_head_cell gantt_grid_head_add" onclick="custom_add()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
-                    </svg>
-                </div>`,colContent = ""; 
-        gantt.config.columns = [
-            {name: "text", tree: true, width: '*', resize: true},
-            {name: "start_date", align: "center", resize: true},
-            {name: "duration", align: "center"},
-            {
-                name: "buttons",
-                label: colHeader,
-                width: 75,
-                template: colContent
-            }
-        ];
 
         /* Fuerzo la recarga del gantt desde raíz */
         hard_reload_gantt();
@@ -388,14 +346,9 @@ function crawl(status_comision){
         show($('#pedir-token'));
         hide($('#soltar-token'));
         hide($('#token-libre'));
+        hide($('#nueva-tarea'));
         gantt.config.readonly = true;
         noEditable = true;
-        colHeader = "",colContent = "";
-        gantt.config.columns = [
-            {name: "text", tree: true, width: '*', resize: true},
-            {name: "start_date", align: "center", resize: true},
-            {name: "duration", align: "center"}
-        ];
 
         /* Fuerzo la recarga del gantt desde raíz */
         hard_reload_gantt();
@@ -417,6 +370,13 @@ function crawl(status_comision){
         hide_poll();
         show_token_control();
         tablero_voto_visible = false;
+        if('resultado_votacion' in status_comision && voto_emitido == true){
+            if(status_comision.resultado_votacion == 1){
+                success("La votación ha terminado positiva y se actualizó el editor.");
+            }else{
+                error("La votación ha terminado negativa, se mantiene el editor.");
+            }
+        }
         voto_emitido = false;
     }
 }
@@ -430,7 +390,7 @@ function hard_reload_gantt(){
             "X-Header-Comision-Id": comision
         }
     }).then(function (xhr) {
-        if(noEditable) gantt.clearAll(); //hotfix para tareas eliminadas
+        if(noEditable) gantt.clearAll(); //hotfix para tareas eliminadas en alumnos en un gantt no editable
         gantt.parse(xhr.responseText);
         gantt.init("gantt_here");
     });
@@ -455,7 +415,6 @@ function soltarToken(){
 
 /* actualiza la interfaz gráfica para obtener el token */
 function prescindirToken(res){
-    console.log(res);
     if(res.cod != 1){
         error(res.action);
     }else{
@@ -463,14 +422,9 @@ function prescindirToken(res){
         show($('#pedir-token'));
         hide($('#soltar-token'));
         show($('#token-libre'));
+        hide($('#nueva-tarea'));
         gantt.config.readonly = true;
         noEditable = true;
-        colHeader = "",colContent = "";
-        gantt.config.columns = [
-            {name: "text", tree: true, width: '*', resize: true},
-            {name: "start_date", align: "center", resize: true},
-            {name: "duration", align: "center"}
-        ];
 
         /* Fuerzo la recarga del gantt desde raíz */
         hard_reload_gantt();
@@ -496,35 +450,15 @@ function pedirToken(){
 
 function tomarToken(res){
     voto_emitido == false;
-    console.log(res);
     if(res.cod == 0){
         error(res.action);
     }else if(res.cod == 1){
         hide($('#pedir-token'));
         show($('#soltar-token'));
         hide($('#token-libre'));
-        console.log("Vuelvo a tornar readable el gantt");
+        show($('#nueva-tarea'));
         gantt.config.readonly = false;
         noEditable = false;
-
-        /* Rearmo los headers */
-        colHeader = 
-                `<div class="gantt_grid_head_cell gantt_grid_head_add" onclick="custom_add()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
-                    </svg>
-                </div>`,colContent = ""; 
-        gantt.config.columns = [
-            {name: "text", tree: true, width: '*', resize: true},
-            {name: "start_date", align: "center", resize: true},
-            {name: "duration", align: "center"},
-            {
-                name: "buttons",
-                label: colHeader,
-                width: 75,
-                template: colContent
-            }
-        ];
 
         /* Fuerzo la recarga del gantt desde raíz */
         hard_reload_gantt();
@@ -615,7 +549,9 @@ function success(msg){
     $('#toast-success').hide();
     $("#toast-success-body").html(msg);
     $("#toast-success").fadeIn( 200, function() {
-        setTimeout(function(){
+        if(success_timeout != null) clearTimeout(success_timeout);
+        if(error_timeout != null) clearTimeout(error_timeout);
+        success_timeout = setTimeout(function(){
             $('#toast-success').fadeOut(200);
         },3500);
     });
@@ -627,7 +563,9 @@ function error(msg){
     $('#toast-success').hide();
     $("#toast-error-body").html(msg);
     $("#toast-error").fadeIn( 200, function() {
-        setTimeout(function(){
+        if(error_timeout != null) clearTimeout(error_timeout);
+        if(success_timeout != null) clearTimeout(success_timeout);
+        error_timeout = setTimeout(function(){
             $('#toast-error').fadeOut(200);
         },3500);
     });

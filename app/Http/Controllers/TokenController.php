@@ -29,6 +29,7 @@ class TokenController extends Controller
         $user = auth()->user();
         $status_comision = (object)[]; #Status de la comisión y sincronización
         $cant_online = 1;
+        $status_comision->time_control = now()->format('Y-m-d H:i:s');
         
         /* Marco mi llegada al servidor, o la refresco */
         Cache::put("alumno".$user->comision_id."-".$user->id, "alive-".now()); #Si hace 15 seg que no tiene keepalive pasa a "gone-".now()
@@ -43,10 +44,10 @@ class TokenController extends Controller
         /* Datos de compañeros online */
         $compañeros = User::where('comision_id', $user->comision_id)->where('id', '!=' , $user->id)->get();
         $data_compañeros = Array();
-        $max_time = now()->subSeconds(15)->format('Y-m-d H:i:s');
         foreach ($compañeros as $key => $compa) {
             $last_seen = Cache::get('alumno'.$user->comision_id."-".$compa->id, "gone");
             if($last_seen != "gone"){
+                $max_time = now()->subSeconds(15)->format('Y-m-d H:i:s');
                 $time_alive = explode("-", $last_seen, 2)[1];
                 if($max_time > $time_alive){ //si ahora menos 15 segundos es mayor a la ultima vez que lo vimos, se fué
                     Cache::put('alumno'.$user->comision_id."-".$compa->id, "gone");
@@ -90,24 +91,31 @@ class TokenController extends Controller
                 # Limpio rastros de una votación
                 Cache::put("votacion-".$user->comision_id,0);
                 Cache::put("votacion-timeout".$user->comision_id,0);
-                Cache::put("votacion-target".$user->comision_id, 0);
+                Cache::put("votacion-target".$user->comision_id,0);
                 Cache::put("votacion-positivo".$user->comision_id,0);
                 Cache::put("votacion-negativo".$user->comision_id,0);
+                Cache::put("votacion-last-result".$user->comision_id,1);
+                $status_comision->resultado_votacion = 1;
                 $votacion_en_curso = 0; #Cierro la votacion
-            }else if((isset($votacion_timeout) && $votacion_timeout != 0 && $votacion_timeout < now()) || ($votacion_neg == $cant_online)){
+            }else if((isset($votacion_timeout) && $votacion_timeout != 0 && $votacion_timeout < now()) || ($votacion_neg == $cant_online) || (($votacion_neg-$votacion_pos) >= ceil($cant_online/2))){
                 # Limpio rastros de una votación
                 Cache::put("votacion-".$user->comision_id,0);
                 Cache::put("votacion-timeout".$user->comision_id,0);
-                Cache::put("votacion-target".$user->comision_id, 0);
+                Cache::put("votacion-target".$user->comision_id,0);
                 Cache::put("votacion-positivo".$user->comision_id,0);
                 Cache::put("votacion-negativo".$user->comision_id,0);
+                Cache::put("votacion-last-result".$user->comision_id,0);
+                $status_comision->resultado_votacion = 0;
                 $votacion_en_curso = 0; #Cierro la votacion
+            }else{
+                /* Debo devolver el estado de la votación, sigue en curso */
+                $status_comision->votacion_timeout = $votacion_timeout;
+                $status_comision->votacion_pos = $votacion_pos;
+                $status_comision->votacion_neg = $votacion_neg;
+                $status_comision->votacion_target = $votacion_target;
             }
-            /* Debo devolver el estado de la votación, sigue en curso */
-            $status_comision->votacion_timeout = $votacion_timeout;
-            $status_comision->votacion_pos = $votacion_pos;
-            $status_comision->votacion_neg = $votacion_neg;
-            $status_comision->votacion_target = $votacion_target;
+        }else{
+            $status_comision->resultado_votacion = Cache::get("votacion-last-result".$user->comision_id,0);
         }
         $status_comision->votacion_en_curso = $votacion_en_curso;
  

@@ -101,7 +101,7 @@ class GanttController extends Controller
 		if(!isset($comision_id) && !$user->isProfesor()){
 			/* Token management */
 			$token_owner = Cache::get("token_owner-".$user->comision_id, null);
-			if($token_owner == null){ # Token disponible
+			if($token_owner == null || $token_owner == 0){ # Token disponible
 				Cache::put("token_owner-".$user->comision_id, $user->id);
 				$token_owner = $user->id;
 			}
