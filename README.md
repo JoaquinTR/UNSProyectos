@@ -1,63 +1,22 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# UNSProyectos
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Uns Proyectos es una aplicación destinada a la administración de proyectos en general dentro del ambiente académico de la Universidad Nacional del Sur. La aplicación está desarrollada utilizando Laravel 9 y Bootstrap 5, y está construida sobre un Docker lo cual permite un grado de portabilidad excepcional.
 
-## About Laravel
+## Objetivo primordial
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+La idea central del proyecto es brindar una herramienta tanto a la cátedra como a los alumnos para planificar un proyecto de software sin tener que caer en diversas herramientas que o bien no son gratuitas o poseen limitaciones de uso que impiden el flujo ágil de un proyecto de software. Por el lado de la cátedra se define una herramienta automatizada de creación de cuentas, de entrega de sprints y de devolución de manera centralizada evitando imprimir planificaciones de manera innecesaria y cualquier complicación relacionada a las tecnologías preexistentes. Del lado del alumno se desea crear una herramienta gráfica intuitiva y amistosa para planificar sprints de un proyecto de software eliminando por completo tener que buscar una herramienta que lo permita.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Alcance
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Actualmente en fase de análisis y desarrollo, está destinado a la administración del proyecto de la materia Administración de Proyectos de Software, pero está pensado para que permita adminstrar todo tipo de proyecto de manera gráfica (sutil proyección a futuro, que sea útil para la Universidad y no solo a una materia).
 
-## Learning Laravel
+## Funcionamiento
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Actualmente la aplicación gira en torno a dos roles principales, profesor y alumno. El profesor actúa como administrador del proyecto de la materia mientras que los alumnos como planificadores de sprints. La aplicación está pensada para que la cátedra de la materia cree un proyecto nuevo, defina la estructura del mismo en base a la cantidad de sprints que posee, sus deadlines y cuándo comienzan para luego definir cómo van a estar compuestos los grupos de trabajo. Para esto último está pensado que se importen todos los datos de alumnos anotados en la materia y los dividan en comisiones. La creación de usuarios es automática y via un mail destinado a las casillas de los alumnos. 
+Una vez definidas las comisiones arranca el proyecto automáticamente y una vez alcanzado el deadline de un sprint, éste se entrega solo.
+En todo momento los profesores pueden ver el estado de todo sprint de toda cátedra, además de modificar el inicio o deadline de cualquier sprint.
+Una vez disparada la entrega automática de un sprint, la cátedra dispone de una herramienta símple para visualizar la planificación brindada y proceder a su corrección.
+Los alumnos poseen una herramienta para ver las correcciones en tiempo real.
 
 ## License
 
