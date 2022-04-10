@@ -195,7 +195,7 @@ var error_timeout = null;
 
 /* Funcionalidad de tokens, inicio de la página */
 jQuery(function(){
-    /* Autenticación básica via cookies */
+    /* Autenticación básica via cookies, ideal sanctum en /api */
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -304,6 +304,10 @@ function keepalive(){
 function crawl(status_comision){
     console.log(status_comision);
 
+    if('token_owner' in status_comision){
+        token_owner = status_comision.token_owner;
+    }
+    
     /* Actualizo el estado de cada compañero */
     if('data_compañeros' in status_comision){
         status_comision.data_compañeros.forEach(compa => {
@@ -477,9 +481,14 @@ function votoPositivo(){
         dataType: "text",
         timeout: 2500,
         success: function (response) {
-          console.log(JSON.parse(response));
-          hide($('#grupo-voto'));
-          voto_emitido = true;
+            let res = JSON.parse(response);
+            console.log(res);
+            if(res.cod == 1){
+                error(res.action);
+            }else{
+                hide($('#grupo-voto'));
+                voto_emitido = true;
+            }
         },
         error: function (xhr, ajaxOptions, thrownError) {
           console.error(thrownError);
@@ -496,9 +505,14 @@ function votoNegativo(){
         dataType: "text",
         timeout: 2500,
         success: function (response) {
-          console.log(JSON.parse(response));
-          hide($('#grupo-voto'));
-          voto_emitido = true;
+            let res = JSON.parse(response);
+            console.log(res);
+            if(res.cod == 1){
+                error(res.action);
+            }else{
+                hide($('#grupo-voto'));
+                voto_emitido = true;
+            }
         },
         error: function (xhr, ajaxOptions, thrownError) {
           console.error(thrownError);

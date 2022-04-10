@@ -27,11 +27,17 @@ class GanttController extends Controller
 
 		/* Token management */
 		$token_owner = Cache::get("token_owner-".$user->comision_id, null);
-		if($token_owner == null){ # Token disponible
-			/* LOCK token_owner, en deny, poner token_owner en 0 */
-			Cache::put("token_owner-".$user->comision_id, $user->id);
-			$token_owner = $user->id;
-			/* Release token_owner */
+		if($token_owner == null || $token_owner == 0){ # Token disponible
+			$lock = Cache::lock("token_owner-".$user->comision_id.'_lock', 2); //Trato de obtener el lock
+
+			try {
+				if ($lock->get()) {
+					Cache::put("token_owner-".$user->comision_id, $user->id);
+					$token_owner = $user->id;
+				}
+			} finally {
+				$lock->release();
+			}
 		}
 
 		/* Data de logueados */
@@ -102,8 +108,16 @@ class GanttController extends Controller
 			/* Token management */
 			$token_owner = Cache::get("token_owner-".$user->comision_id, null);
 			if($token_owner == null || $token_owner == 0){ # Token disponible
-				Cache::put("token_owner-".$user->comision_id, $user->id);
-				$token_owner = $user->id;
+				$lock = Cache::lock("token_owner-".$user->comision_id.'_lock', 2);
+ 
+				try {
+					if ($lock->get()) {
+						Cache::put("token_owner-".$user->comision_id, $user->id);
+						$token_owner = $user->id;
+					}
+				} finally {
+					$lock->release();
+				}
 			}
 
 			/* Data de logueados */

@@ -57,7 +57,18 @@ class TokenController extends Controller
                 }
             }
             if($last_seen == "gone" && $token_owner == $compa->id){ //Si se fué el token owner debo soltar el token
-                Cache::put("token_owner-".$user->comision_id, 0);
+                $lock = Cache::lock("token_owner-".$user->comision_id.'_lock', 2); //Trato de obtener el lock
+
+                try {
+                    if ($lock->get()) {
+                        Cache::put("token_owner-".$user->comision_id, 0);
+                    }else{ //alguien vió que se fue antes, delego
+                        $lock->release();
+                        continue;
+                    }
+                } finally {
+                    $lock->release();
+                }
             }
             
             $data = Array(
@@ -72,7 +83,7 @@ class TokenController extends Controller
         $status_comision->data_compañeros = $data_compañeros;
         $status_comision->cant_online = $cant_online;
 
-        /* Datos de votos */
+        /* Datos de votos, TODO lock basandose solo en votacion-$user->comision_id */
         $votacion_en_curso = Cache::get("votacion-".$user->comision_id,0);
         $votacion_pos = null;
         $votacion_neg = null;
@@ -118,11 +129,15 @@ class TokenController extends Controller
             $status_comision->resultado_votacion = Cache::get("votacion-last-result".$user->comision_id,0);
         }
         $status_comision->votacion_en_curso = $votacion_en_curso;
+
+        /* ¿FIX? trato de que no me patee el servidor, se va defasando la hora por alguna razon*/
+        Cache::put("alumno".$user->comision_id."-".$user->id, "alive-".now());
  
         # Fin del proceso de keepalive, retorno el status de la comisión
         return $this->response($status_comision,200);
     }
 
+    //TODO: Modelar los locks con lock->block(2); (esperar a obtener el lock un máximo de 2 segundos) para los casos de colisión de locks.
     /**
      * Comienza una votación para que el alumno que la inicia tome poder del token.
      */
@@ -208,7 +223,20 @@ class TokenController extends Controller
         $votacion_en_curso = Cache::get("votacion-".$user->comision_id, 0);
         if($votacion_en_curso == 1){
             $votacion_pos = Cache::get("votacion-positivo".$user->comision_id, 0);
-            Cache::put("votacion-positivo".$user->comision_id, $votacion_pos + 1);
+            $lock = Cache::lock("votacion-".$user->comision_id.'_lock', 2); //Trato de obtener el lock
+
+            try {
+                if ($lock->get()) {
+                    Cache::put("votacion-positivo".$user->comision_id, $votacion_pos + 1);
+                }else{ //alguien vió que se fue antes, delego
+                    return response()->json([
+                        "cod" => 1,
+                        "action"=> "No se pudo registrar la votación, reintente por favor."
+                    ]);
+                }
+            } finally {
+                $lock->release();
+            }
         }else{
             return response()->json([
                 "cod" => 1,
@@ -231,7 +259,20 @@ class TokenController extends Controller
         $votacion_en_curso = Cache::get("votacion-".$user->comision_id, 0);
         if($votacion_en_curso == 1){
             $votacion_neg = Cache::get("votacion-negativo".$user->comision_id, 0);
-            Cache::put("votacion-negativo".$user->comision_id, $votacion_neg + 1);
+            $lock = Cache::lock("votacion-".$user->comision_id.'_lock', 2); //Trato de obtener el lock
+
+            try {
+                if ($lock->get()) {
+                    Cache::put("votacion-negativo".$user->comision_id, $votacion_neg + 1);
+                }else{ //alguien vió que se fue antes, delego
+                    return response()->json([
+                        "cod" => 1,
+                        "action"=> "No se pudo registrar la votación, reintente por favor."
+                    ]);
+                }
+            } finally {
+                $lock->release();
+            }
         }else{
             return response()->json([
                 "cod" => 1,

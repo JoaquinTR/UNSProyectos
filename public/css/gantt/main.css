@@ -100,6 +100,9 @@ main {
   position: absolute;
 }
 
+#token-libre{
+  cursor: auto !important;
+}
 .gone{
     background-color: gray;
 }
