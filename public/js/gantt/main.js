@@ -206,7 +206,7 @@ jQuery(function(){
         hide($('#nueva-tarea'));
     }
 
-    if(token_owner != 0){
+    if(token_owner != 0 && !isProfesor){
         keepalive();
         setInterval(keepalive, 3000);
     }

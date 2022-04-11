@@ -27,6 +27,12 @@ class TokenController extends Controller
     public function keepalive(Request $request){
         
         $user = auth()->user();
+        if($user->isProfesor()){
+            return response()->json([
+                "cod" => 1,
+                "action"=> "Un profesor no posee keepalive."
+            ],403);
+        }
         $status_comision = (object)[]; #Status de la comisión y sincronización
         $cant_online = 1;
         $status_comision->time_control = now()->format('Y-m-d H:i:s');

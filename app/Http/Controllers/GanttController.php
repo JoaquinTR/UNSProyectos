@@ -194,14 +194,20 @@ class GanttController extends Controller
   	public function get(Request $request){
 		$user = auth()->user();
 		$sprint_id = $request->header('X-Header-Sprint-Id');
-		$comision_id = $user->comision_id;
+		if($user->isProfesor()){
+			$comision_id = $request->header('X-Header-Comision-Id');
+		}else{
+			$comision_id = $user->comision_id;
+		}
 		$tasks = new Task();
 		$links = new Link();
 		
 		#Limpio la entrada de datos dirty
-		try {
-			Cache::put("datos-dirty-".$user->comision_id."-".$user->id,0);
-		}catch(Exception $e){/* No interesa el lock, va a refrescar los datos en el frontend */}
+		if(!$user->isProfesor()){
+			try {
+				Cache::put("datos-dirty-".$user->comision_id."-".$user->id,0);
+			}catch(Exception $e){/* No interesa el lock, va a refrescar los datos en el frontend */}
+		}
 
     	return response()->json([
 			"data" => $tasks->orderBy('sortorder')->where('sprint_id', $sprint_id)->where('comision_id', $comision_id)->get(),

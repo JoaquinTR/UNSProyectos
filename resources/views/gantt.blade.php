@@ -128,6 +128,7 @@
 	var comision = {{$comision;}};
 	var current_user_id = {{Auth::user()->id}};
 	var token_owner = {{(isset($token_owner)) ? $token_owner : 0}};
+	var isProfesor = "{{Auth::user()->isProfesor()}}";
 	var noEditable = {{($sprint['entregado'] || !isset($token_owner) || !$token_owner || $sprint['iniciado'] == 0 || Auth::user()->isProfesor()) ? 'true' : 'false'}};
 </script>
 <script src="{{ asset('dhtmlxgantt.js') }}" ></script>
